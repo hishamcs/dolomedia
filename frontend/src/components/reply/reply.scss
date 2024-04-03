@@ -1,0 +1,68 @@
+
+.reply-container{
+    display: flex;
+    gap: 1.5rem;
+    .ii{
+        height: 30px;
+        width: 30px;
+        img{
+            height: 30px;
+        width: 30px;
+        }
+    }
+    .reply-info{
+        font-size: smaller;
+        span{
+            font-size: small;
+            font-weight: 500;
+        }
+        .reply-time{
+            font-size: xx-small;
+            font-weight: 320;
+        }
+        // .reply-content{
+        //     p{
+
+        //     }
+        // }
+
+        .reply-action{
+            display: flex;
+            gap: 1.5rem;
+            font-weight: bold;
+            font-size: xx-small;
+            color: gray;
+            span{
+                font-weight: bold;
+            font-size: xx-small;
+            color: gray;
+            }
+        }
+        .reply-form{
+            display: flex;
+            gap: 5px;
+            input{
+                padding: 5px;
+                border-radius: 15px;
+                width: 20rem;
+            }
+            button{
+                padding: 5px;
+                margin-left: 1rem;
+                color: white;
+                font-size: smaller;
+                font-weight: 500;
+                border: none;
+                border-radius: 15px;
+                background-color: gray;
+            }
+        }
+
+    }
+    span{
+        font-size: xx-small;
+        flex: none;
+        align-self: center;
+        padding-right: 34px;
+    }
+}

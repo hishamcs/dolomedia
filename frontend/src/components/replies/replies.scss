@@ -1,0 +1,37 @@
+.replies{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: smaller;
+    .reply-send{
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+
+        img{
+            height: 30px;
+            width: 30px;
+        }
+        input{
+            width: 25rem;
+            height: 36px;
+            padding: 1px 10px;
+        }
+        button{
+            color: white;
+            background: gray;
+            font-size: x-small;
+            padding: 1px 6px;
+            border-radius: 10px;
+            border: none;
+            
+            
+        }
+    }
+
+    .reply{
+        display: flex;
+        flex-direction: column;
+        padding-left: 73px;
+    }
+}

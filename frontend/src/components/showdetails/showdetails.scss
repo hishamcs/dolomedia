@@ -1,0 +1,22 @@
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    .fol-container{
+        
+
+        .fol-body{
+            img{
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+            }
+            .following-list{
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+    }
+
+}

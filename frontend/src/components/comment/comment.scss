@@ -1,0 +1,39 @@
+.comment-container{
+    .comme-cont {
+
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        .infoo {
+            flex: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            align-items: flex-start;
+
+            .sub{
+                display: flex;
+                gap: 30px;
+                p{
+                    font-weight: 700;
+                    font-size: x-small;
+                }
+
+            }
+            span{
+                font-weight: 500;
+            }
+            p{
+                color: #555;
+                cursor: pointer;
+            }
+
+        }
+        .date{
+            flex: 1;
+            align-self: center;
+            color: grey;
+            font-size: 12px;
+        }   
+    }
+}
