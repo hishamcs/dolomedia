@@ -17,7 +17,8 @@ import {
 
     USER_BLOCK_FAIL,
     USER_BLOCK_SUCCESS,
-    USER_BLOCK_REQUEST
+    USER_BLOCK_REQUEST,
+
 } from '../constants/userConstants'
 
 export const userLoginReducer = (state = {}, action) => {
@@ -94,3 +95,18 @@ export const userBlockReducer = (state = {}, action) => {
             return state
     }
 }
+
+// export const ChagnePictureReducer = (state={}, action) => {
+//     switch(action.type) {
+//         case USER_CHANGEPIC_REQUEST:
+//             return {loading:true}
+        
+//         case USER_CHANGEPIC_SUCCESS:
+//             return {loading:false, success:true, message:action.payload}
+
+//         case USER_CHANGEPIC_FAIL:
+//             return {loading:false, error:action.payload}
+//         default:
+//             return state
+//     }
+// }

@@ -12,4 +12,5 @@ urlpatterns = [
     path('user/blo-unblo/<str:pk>/', views.blo_unblo_user, name='blo_unblo_user'),
     path('user-search/', views.search_user, name='search_user'),
     path('otp-generation/', views.generate_otp),
+    path('user/profile/update-pic/', views.update_user_pic, name='user_pic_udpate')
 ]

@@ -263,4 +263,4 @@ class CommentLikeView(APIView):
             response = {'commentLike':True, 'likeCount':comment.likeCount}
         comment.save()
             
-        return Response(response)
+        return Response(response)       

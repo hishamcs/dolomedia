@@ -1,6 +1,8 @@
 from .models import User
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_extra_fields.fields import Base64ImageField 
+import base64
 
 
 
@@ -10,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id','email', 'name','is_active','isAdmin']
+        fields = ['id','email', 'name','is_active','isAdmin','pro_pic', 'cover_pic']
 
     
     def get_name(self, obj):
@@ -25,7 +27,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserSerializerWithToken(UserSerializer):
     token = serializers.SerializerMethodField(read_only=True)
-
     class Meta:
         model = User
         fields = ['id','email', 'name','token','isAdmin']
@@ -33,3 +34,8 @@ class UserSerializerWithToken(UserSerializer):
     def get_token(self, obj):
         token = RefreshToken.for_user(obj)
         return str(token.access_token)
+
+
+    
+
+    

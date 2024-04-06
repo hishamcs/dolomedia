@@ -6,11 +6,19 @@ import axios from 'axios'
 import { useSelector } from 'react-redux'
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ShowDeatils from '../components/showdetails/ShowDetail'
+import SettingsSharpIcon from '@mui/icons-material/SettingsSharp';
+import EditSharpIcon from '@mui/icons-material/EditSharp';
+import PictureChange from '../components/PictureChange';
+import { Toaster } from 'react-hot-toast';
 
 
 const Profile = () => {
 
     const userLogin = useSelector(state=>state.userLogin)
+    const [pictureChange, setPictureChange] = useState(false)
+    const [change, setChange] = useState()
+    const [proPicSrc,setProPicSrc] = useState()
+    const [coverPicSrc, setCoverPicSrc] = useState()
     const [loading, setLoading] = useState(true)
     const [followersCount, setFollowersCount] = useState()
     const [followingCount, setFollowingCount] = useState()
@@ -23,7 +31,10 @@ const Profile = () => {
     const [name, setName] = useState()
     const {id} = useParams()
 
-
+    const changePic = (e) => {
+        setChange(e.currentTarget.getAttribute('title'))
+        setPictureChange(true)
+    }
     const followingList = () => {
         axios.post('/posts/profile/following-list/', {userId:id}).then((response) => {
             setListInfo('Following List')
@@ -44,6 +55,9 @@ const Profile = () => {
     useEffect(()=>{
         setLoading(true)
         axios.get(`/posts/profile/${id}`).then((response)=>{
+            console.log(response.data)
+            setCoverPicSrc(response.data.user.cover_pic)
+            setProPicSrc(response.data.user.pro_pic)
             setName(response.data.user.name)
             setFollowersCount(response.data.followersCount)
             setFollowingCount(response.data.followingCount)
@@ -55,23 +69,38 @@ const Profile = () => {
     return(
         <div className='profile'>
             <div className='images'>
+                {userId==id && (<div className='cover-edit-icon position-absolute' title='Change Cover picture' onClick={changePic}>
+                                    <EditSharpIcon />
+                                </div>)
+                }
                 <img
-                src='https://images.pexels.com/photos/13440765/pexels-photo-13440765.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+                //src='https://images.pexels.com/photos/13440765/pexels-photo-13440765.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+                src={coverPicSrc}
                 alt=''
                 className='cover' 
                 />
-                <img 
-                src='https://images.pexels.com/photos/14028501/pexels-photo-14028501.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load'
-                alt=''
-                className='profilePic'
-                />
+                <div className='pro-pic-container'>
+                    <div className='pro-cont d-flex justify-content-center'>
+                        <img 
+                        // src='https://images.pexels.com/photos/14028501/pexels-photo-14028501.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load'
+                        src={proPicSrc?proPicSrc:'https://images.pexels.com/photos/14028501/pexels-photo-14028501.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load'}
+                        alt=''
+                        className='profilePic'
+                        />
+                        {userId==id && (<div className='edit-icon position-absolute' title='change profile picture' onClick={changePic}>
+                            <EditSharpIcon className='p-1'/>
+                        </div>)}
+                    </div>
+                </div>
             </div>
+            <Toaster/>
             <div className='profileContainer'>
                 <div className='uInfo'>
                     <div className='left'>
 
                     </div>
                     <div className='center'>
+                        
                         <span>{name}</span>
                         <div className='info'>
                             {/* <div className='item'>
@@ -100,13 +129,13 @@ const Profile = () => {
                         
                     </div>
                     <div className='right'>
-                        {/* <EmailOutlinedIcon />
-                        <MoreVertIcon /> */}
+                    <SettingsSharpIcon/>
                     </div>
                 </div>
                 {loading ? (<p>loadinggg</p>):(<Posts userPosts={userPosts} />)}
                 {detail && <ShowDeatils detail={detail} setDetail={setDetail} lists={lists} listInfo={listInfo}/>}
             </div>
+            {pictureChange && <PictureChange open={pictureChange} setOpenChange={setPictureChange} change={change} setProPicSrc={setProPicSrc} setCoverPicSrc={setCoverPicSrc}/>}
         </div>
     )
 }

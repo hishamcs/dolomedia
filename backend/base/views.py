@@ -8,6 +8,8 @@ from .models import User
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from posts.models import OpenedNotification
+import base64
+import uuid
 
 
 # Create your views here.
@@ -82,3 +84,25 @@ def search_user(request):
 def generate_otp(request):
     
     return Response({'message':'otp generated'})
+
+
+from django.core.files.base import ContentFile
+import io
+from PIL import Image
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_user_pic(request):
+    image_data = request.data.get('pro_pic')
+    user_id = request.data.get('id')
+    change_pic_type = request.data.get('changePicType')
+    user = User.objects.get(id=user_id)
+    format, imgstr = image_data.split(';base64,')
+    img_data = base64.b64decode(imgstr)
+    img = Image.open(io.BytesIO(img_data))
+    img.verify()
+    if 'profile picture' in change_pic_type:    
+        user.pro_pic.save(f'profile_picture_{user_id}.png', ContentFile(img_data), save=True)
+        return Response({'message':'Pic updated', 'profile_pic':user.pro_pic.url})
+    user.cover_pic.save(f'cover_picture_{user_id}.png', ContentFile(img_data), save=True)
+    return Response({'message':'Cover pic updated','cover_pic':user.cover_pic.url})

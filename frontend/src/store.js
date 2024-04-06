@@ -1,12 +1,13 @@
 import {createStore, combineReducers, applyMiddleware} from 'redux';
 import {thunk} from 'redux-thunk';
 import {composeWithDevTools} from '@redux-devtools/extension';
-import { userRegisterReducer,userListReducer, userLoginReducer, userBlockReducer } from './reducers/userReducers';
+import { userRegisterReducer,userListReducer, userLoginReducer, userBlockReducer} from './reducers/userReducers';
 const reducer = combineReducers({   
     userLogin:userLoginReducer,
     userRegister:userRegisterReducer,
     userList:userListReducer,
     userBlock:userBlockReducer,
+    // changePicture:ChagnePictureReducer,
 })
 
 const userInfoFromStorage = localStorage.getItem('userInfo') ?
