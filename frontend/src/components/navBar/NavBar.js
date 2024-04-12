@@ -4,7 +4,7 @@ import './navBar.scss'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../acitons/userActions';
+import { fetchPicture, logout } from '../../acitons/userActions';
 import { useState } from 'react';
 import axios from 'axios';
 import ShowDeatils from '../showdetails/ShowDetail';
@@ -20,6 +20,9 @@ function NavBar() {
   const [notifications, setNotifications] = useState(false)
   const [notificaitonList, setNotificationList] = useState([])
   const userLogin = useSelector(state=>state.userLogin)
+  const userPicture = useSelector(state=>state.userPicture)
+  const userPic = userPicture.userPicture
+  const proPic = userPic?.pro_pic
   const [userLists, setUserLists] = useState([])
   const [detail, setDetail] = useState(false)
   const {userInfo} = userLogin
@@ -36,6 +39,9 @@ function NavBar() {
   }
   }
   useEffect(() => {
+    if (userId) {
+      dispatch(fetchPicture(userId))
+    }
     const socket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/${userId}/`)
 
     socket.onopen = function(e) {
@@ -50,7 +56,7 @@ function NavBar() {
     socket.onclose = function(e) {
       console.log('e :', e)
     }
-  }, [userId])
+  }, [userId, dispatch])
 
   const handleFetchNotifications = () => {
     console.log('notifications')
@@ -94,7 +100,8 @@ function NavBar() {
             <div className='user'>
                 <Link to={`/home/profile/${userId}`} style={{textDecoration:'none'}}>
                 <div className='userDet'>
-                  <img alt='userimage'src='https://images.pexels.com/photos/3228727/pexels-photo-3228727.jpeg?auto=compress&cs=tinysrgb&w=1600'/>
+                  {/* <img alt='userimage'src='https://images.pexels.com/photos/3228727/pexels-photo-3228727.jpeg?auto=compress&cs=tinysrgb&w=1600'/> */}
+                  <img alt='userimage'src={proPic}/>
                   <span>{userInfo?.name}</span>
                 </div>
                 </Link>

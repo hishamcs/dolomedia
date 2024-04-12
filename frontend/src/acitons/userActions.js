@@ -15,6 +15,11 @@ import {
     USER_BLOCK_SUCCESS,
     USER_BLOCK_FAIL, 
 
+    USER_FETCHPIC_FAIL,
+    USER_FETCHPIC_REQUEST,
+    USER_FETCHPIC_SUCCESS,
+
+
 
 } from '../constants/userConstants'
 
@@ -156,7 +161,6 @@ export const blockUser = (id) => async(dispatch, getState) => {
         }
 
         const {data} = await axios.get(`/api/user/blo-unblo/${id}/`, config)
-        console.log('data : ', data)
         dispatch({
             type:USER_BLOCK_SUCCESS,
             payload:data
@@ -171,32 +175,36 @@ export const blockUser = (id) => async(dispatch, getState) => {
     }
 }
 
-// export const changePicture = (userId, preview) => async(dispatch, getState) => {
-//     try{
-//         dispatch({type:USER_CHANGEPIC_REQUEST})
+export const fetchPicture = (userId) => async(dispatch, getState) => {
+    try {
+        // console.log('id : ', userId)
+        dispatch({type:USER_FETCHPIC_REQUEST})
 
-//         const {userLogin:{userInfo}} = getState()
+        const {userLogin:{userInfo}} = getState()
 
-//         const config = {
-//             headers: {
-//                 'Content-type':'application/json',
-//                 Authorization: `Bearer ${userInfo.token}`
-//             }
-//         }
-//         const {data} = await axios.post(`/api/user/profile/update-pic/`, {'id': userId, 'pro-pic':preview}, config)
+        const config = {
+            headers: {
+                'Content-type':'application/json',
+                Authorization:`Bearer ${userInfo.token}`
+            }
+        }
+        
+        const {data} = await axios.post(`/api/user/profile/fetch-user-pics/`, {'userId': userId}, config)
+        dispatch({
+            type:USER_FETCHPIC_SUCCESS,
+            payload:data
+        })
 
-//         console.log('data : ', data)
-//         dispatch({
-//             type:USER_CHANGEPIC_SUCCESS,
-//             payload:data
-//         })
-//     } catch(error) {
-//         dispatch({
-//             type:USER_BLOCK_FAIL,
-//             payload:error.response && error.response.data.detail
-//                 ? error.response.data.detail
-//                 :error.message
-//         })
-//     }
-// }
+    } catch(error) {
+        dispatch({
+            type:USER_FETCHPIC_FAIL,
+            payload:error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message
+        })
+    }
+}
+
+
+
 

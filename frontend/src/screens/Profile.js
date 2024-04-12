@@ -15,6 +15,8 @@ import { Toaster } from 'react-hot-toast';
 const Profile = () => {
 
     const userLogin = useSelector(state=>state.userLogin)
+    const userPicture = useSelector(state=>state.userPicture)
+    const userPic = userPicture.userPicture
     const [pictureChange, setPictureChange] = useState(false)
     const [change, setChange] = useState()
     const [proPicSrc,setProPicSrc] = useState()
@@ -55,7 +57,7 @@ const Profile = () => {
     useEffect(()=>{
         setLoading(true)
         axios.get(`/posts/profile/${id}`).then((response)=>{
-            console.log(response.data)
+            // console.log(response.data)
             setCoverPicSrc(response.data.user.cover_pic)
             setProPicSrc(response.data.user.pro_pic)
             setName(response.data.user.name)
@@ -64,7 +66,7 @@ const Profile = () => {
             setUserPosts(response.data.posts)
             setLoading(false)
         })
-    }, [id])
+    }, [id,userPic])
     
     return(
         <div className='profile'>
@@ -74,16 +76,14 @@ const Profile = () => {
                                 </div>)
                 }
                 <img
-                //src='https://images.pexels.com/photos/13440765/pexels-photo-13440765.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
-                src={coverPicSrc}
-                alt=''
-                className='cover' 
+                    src={coverPicSrc}
+                    alt=''
+                    className='cover' 
                 />
                 <div className='pro-pic-container'>
                     <div className='pro-cont d-flex justify-content-center'>
                         <img 
-                        // src='https://images.pexels.com/photos/14028501/pexels-photo-14028501.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load'
-                        src={proPicSrc?proPicSrc:'https://images.pexels.com/photos/14028501/pexels-photo-14028501.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load'}
+                        src={proPicSrc}
                         alt=''
                         className='profilePic'
                         />
@@ -136,6 +136,7 @@ const Profile = () => {
                 {detail && <ShowDeatils detail={detail} setDetail={setDetail} lists={lists} listInfo={listInfo}/>}
             </div>
             {pictureChange && <PictureChange open={pictureChange} setOpenChange={setPictureChange} change={change} setProPicSrc={setProPicSrc} setCoverPicSrc={setCoverPicSrc}/>}
+
         </div>
     )
 }

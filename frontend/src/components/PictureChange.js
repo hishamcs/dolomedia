@@ -1,3 +1,4 @@
+
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
@@ -10,8 +11,9 @@ import Typography from '@mui/material/Typography';
 import Avatar from 'react-avatar-edit';
 import { useState } from 'react';
 import axios from 'axios'
-import {useSelector} from 'react-redux'
+import {useSelector, useDispatch} from 'react-redux'
 import toast from 'react-hot-toast';
+import {fetchPicture} from '../acitons/userActions'
 
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -25,6 +27,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 const PictureChange = ({open, setOpenChange, change, setProPicSrc, setCoverPicSrc}) => {
     const userLogin = useSelector(state=>state.userLogin)
+    const dispatch = useDispatch()
     const {userInfo} = userLogin
     const userId = userInfo.id
     const [preview, setPreview] = useState(null)  
@@ -46,7 +49,9 @@ const PictureChange = ({open, setOpenChange, change, setProPicSrc, setCoverPicSr
             const proPicSrc = response.data.profile_pic
             const coverPicSrc = response.data.cover_pic
             if (proPicSrc){
+              dispatch(fetchPicture(userId))
               setProPicSrc(proPicSrc)
+
             } else {
               setCoverPicSrc(coverPicSrc)
             }
@@ -100,3 +105,4 @@ const PictureChange = ({open, setOpenChange, change, setProPicSrc, setCoverPicSr
 }
 
 export default PictureChange
+

@@ -3,7 +3,7 @@ import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlin
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
 import TextsmsOutlinedIcon from "@mui/icons-material/TextsmsOutlined";
 // import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
-// import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import MoreInfo from '../moreInfo/MoreInfo';
 import { Link } from 'react-router-dom';
 import Comments from '../comments/Comments';
 import { useEffect, useState } from 'react';
@@ -62,22 +62,21 @@ const Post = ({post}) => {
             <div className='container'>
                 <div className='user'>
                     <div className='userInfo'>
-                        <img src='https://images.pexels.com/photos/3228727/pexels-photo-3228727.jpeg?auto=compress&cs=tinysrgb&w=1600' alt=''/>
+                        <img src={post.user.pro_pic} alt=''/>
                         <div className='details'>
                             <Link to={`/home/profile/${post.user.id}`} style={{textDecoration:"none", color:"inherit"}}>
                             <span className='name'>{post.user.name}</span>
                             
                             </Link>
-                            <span className='date'>1 min ago</span>
+                            <span className='date'>{post.post_time}</span>
                         </div>
                     </div>
                     <div>
-                    {/* <MoreHorizIcon onClick={()=>setDropDown(!dropDown)} className='morehoriz-icon'/> */}
-                        {/* {dropDown &&(<div>Report</div>)} */}
-                        <DropdownButton size='sm' variant='none'>
+                    <MoreInfo info={post} userId={userId}/>
+                        {/* <DropdownButton size='sm' variant='none'>
                             <Dropdown.Item onClick={()=>handleReport(post.id)}>Report</Dropdown.Item>
                             
-                        </DropdownButton>  
+                        </DropdownButton>   */}
                         
                     </div>
                 </div>
@@ -98,11 +97,6 @@ const Post = ({post}) => {
                         <TextsmsOutlinedIcon />
                          {commentCount} Comments
                     </div>
-
-                    {/* <div className='item'>
-                        <ShareOutlinedIcon />
-                        Share
-                    </div> */}
                 </div>
                 {commentOpen && <Comments postId={post.id} />}
                 <Toaster />

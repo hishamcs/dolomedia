@@ -29,6 +29,7 @@ function Posts({updatePosts, setUpdatePosts, userPosts}) {
       }
 
       const response = await axios?.get(`/posts/addposts/${userId}`, config)
+      console.log('posts : ', response.data)
       setPosts(response.data)
       
     }

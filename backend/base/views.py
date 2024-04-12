@@ -3,7 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
-from .serializers import UserSerializer, UserSerializerWithToken
+from .serializers import UserSerializer, UserSerializerWithToken, UserPictureSerailzer
 from .models import User
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
@@ -90,19 +90,58 @@ from django.core.files.base import ContentFile
 import io
 from PIL import Image
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def update_user_pic(request):
+#     image_data = request.data.get('pro_pic')
+#     user_id = request.data.get('id')
+#     change_pic_type = request.data.get('changePicType')
+#     user = User.objects.get(id=user_id)
+#     format, imgstr = image_data.split(';base64,')
+#     img_data = base64.b64decode(imgstr)
+#     img = Image.open(io.BytesIO(img_data))
+#     img.verify()
+#     if 'profile picture' in change_pic_type:    
+#         user.pro_pic.save(f'profile_picture_{user_id}.png', ContentFile(img_data), save=True)
+#         return Response({'message':'Pic updated', 'profile_pic':user.pro_pic.url})
+#     user.cover_pic.save(f'cover_picture_{user_id}.png', ContentFile(img_data), save=True)
+#     return Response({'message':'Cover pic updated','cover_pic':user.cover_pic.url})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def fetch_user_pic(request):
+    print('request data : ', request.data)
+    user_id = request.data.get('userId')
+    try:
+        user = User.objects.get(id=user_id)
+        serializer = UserPictureSerailzer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    except User.DoesNotExist:
+        return Response({'error': "User doesn't exist"}, status=status.HTTP_404_NOT_FOUND)
+    
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_user_pic(request):
     image_data = request.data.get('pro_pic')
     user_id = request.data.get('id')
     change_pic_type = request.data.get('changePicType')
-    user = User.objects.get(id=user_id)
-    format, imgstr = image_data.split(';base64,')
-    img_data = base64.b64decode(imgstr)
-    img = Image.open(io.BytesIO(img_data))
-    img.verify()
-    if 'profile picture' in change_pic_type:    
-        user.pro_pic.save(f'profile_picture_{user_id}.png', ContentFile(img_data), save=True)
-        return Response({'message':'Pic updated', 'profile_pic':user.pro_pic.url})
-    user.cover_pic.save(f'cover_picture_{user_id}.png', ContentFile(img_data), save=True)
-    return Response({'message':'Cover pic updated','cover_pic':user.cover_pic.url})
+    if not all([image_data, user_id, change_pic_type]):
+        return Response({'error':'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = User.objects.get(id=user_id)
+        format, imgstr = image_data.split(';base64,')
+        img_data = base64.b64decode(imgstr)
+        img = Image.open(io.BytesIO(img_data))
+        img.verify()
+
+        if 'profile picture' in change_pic_type:
+            user.pro_pic.save(f'profile_picture_{user_id}.png', ContentFile(img_data), save=True)
+            return Response({'message':'Pic updated', 'profile_pic':user.pro_pic.url})
+        elif 'Cover picture' in change_pic_type:
+            user.cover_pic.save(f'cover_picture_{user_id}.png', ContentFile(img_data), save=True)
+            return Response({'message':'Cover pic updated','cover_pic':user.cover_pic.url})
+    except User.DoesNotExist:
+        return Response({'error':'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    

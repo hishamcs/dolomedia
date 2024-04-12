@@ -29,12 +29,17 @@ class UserSerializerWithToken(UserSerializer):
     token = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = User
-        fields = ['id','email', 'name','token','isAdmin']
+        fields = ['id','email', 'name','token','isAdmin', 'pro_pic', 'cover_pic']
 
     def get_token(self, obj):
         token = RefreshToken.for_user(obj)
         return str(token.access_token)
 
+class UserPictureSerailzer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['pro_pic', 'cover_pic']
 
     
 

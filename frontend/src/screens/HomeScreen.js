@@ -7,6 +7,8 @@ import './home.scss'
 
 function HomeScreen() {
     const userLogin = useSelector(state=> state.userLogin)
+    const userPics = useSelector(state=>state.userPicture)
+    const {userPicture} = userPics
     const navigate = useNavigate()
     const {userInfo} = userLogin
     const [updatePosts, setUpdatePosts] = useState(false)
@@ -19,7 +21,7 @@ function HomeScreen() {
 
     return(
         <div className='home'>
-            <Share userInfo={userInfo} onUpdatePosts={()=> setUpdatePosts(true)} />
+            <Share userInfo={userInfo} userPicture={userPicture} onUpdatePosts={()=> setUpdatePosts(true)} />
             <Posts updatePosts={updatePosts} setUpdatePosts={setUpdatePosts}/>
         </div>
     )

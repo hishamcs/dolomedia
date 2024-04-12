@@ -4,11 +4,12 @@ import axios from 'axios';
 
 
 
-const Share = ({userInfo,onUpdatePosts}) => {
+const Share = ({userInfo,onUpdatePosts, userPicture}) => {
 
   // console.log('userinfo : ', userInfo,'\nonUpdatePosts : ', onUpdatePosts)
   const name = userInfo?.name
   const userId = userInfo?.id
+  const proPicSrc = userPicture?.pro_pic
   const [content, setContent] = useState('')
   const [file, setFile] = useState('')
   const setImage = (e) => {
@@ -51,7 +52,7 @@ const Share = ({userInfo,onUpdatePosts}) => {
       <div className="containerr">
         <div className="top">
           <img
-            src='https://images.pexels.com/photos/3228727/pexels-photo-3228727.jpeg?auto=compress&cs=tinysrgb&w=1600'
+            src={proPicSrc}
             alt=""
           />
           <input type="text" placeholder={`What's on your mind "${name}?`} value={content} onChange={(e) => setContent(e.target.value)} />

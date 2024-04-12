@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Loader from '../components/Loader'
 import Message from '../components/Message'
 import FormContainer from '../components/FormContainer'
-import { login } from '../acitons/userActions'
+import { login, fetchPicture } from '../acitons/userActions'
 import GoogleButton from 'react-google-button'
 import {auth, provider} from '../firebase.config'
 import { signInWithPopup } from 'firebase/auth'
@@ -24,6 +24,7 @@ function LoginScreen({location = {search:''}, history}) {
 
     useEffect(() => {
         if (userInfo) {
+            dispatch(fetchPicture(userInfo.id))
             if(userInfo.isAdmin) {
                 navigate('/ad-home')
             } else {
@@ -36,6 +37,7 @@ function LoginScreen({location = {search:''}, history}) {
     const submitHandler = (e) => {
         e.preventDefault()
         dispatch(login(email, password))
+        
     }
 
     const handleGoogleAuth = () => {

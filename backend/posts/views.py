@@ -169,16 +169,17 @@ class CommentView(APIView):
     def get(self,request):
         
         comment_id = request.GET.get('commentId')
+        post_id = request.GET.get('postId')
+        user_id = request.GET.get('userId')
         if comment_id:
             comment = Comment.objects.get(id=comment_id)
             replies = comment.replies.all()
             # print('replies : ', replies)
-            serializer = self.serializer_class(replies, many=True)
+            serializer = self.serializer_class(replies, many=True, context={'user_id':user_id})
             return Response(serializer.data)
-        post_id = request.GET.get('postId')
-        comments = Comment.objects.filter(post__id=post_id, parent=None)
-        serializer = self.serializer_class(comments, many=True)
         
+        comments = Comment.objects.filter(post__id=post_id, parent=None)
+        serializer = self.serializer_class(comments, many=True, context={'user_id':user_id})
         return Response(serializer.data)
     
 
@@ -238,6 +239,8 @@ class NotificationView(APIView):
 
 
 class CommentLikeView(APIView):
+    def get(self, request):
+        return Response({'message':'success'})
     def post(self, request):
         user_id = request.data.get('userId')
         comment_id = request.data.get('commentId')
