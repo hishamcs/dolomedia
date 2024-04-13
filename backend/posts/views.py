@@ -18,6 +18,8 @@ class PostsView(APIView):
 
     serializer_class = PostSerializer
     def post(self, request, user_id):
+
+        print('request.data : ', request.data)
         user = User.objects.filter(id=user_id).first()
         content = request.data.get('content')
         image = request.data.get('image')
