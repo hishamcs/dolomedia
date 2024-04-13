@@ -9,12 +9,17 @@ from .utils import format_time
 class PostSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     post_time = serializers.SerializerMethodField(read_only=True)
+    comment_count = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Posts
-        fields = ['id', 'user', 'content', 'image', 'likeCount', 'post_time']
+        fields = ['id', 'user', 'content', 'image', 'likeCount', 'post_time', 'comment_count']
 
     def get_post_time(self, obj):
         return format_time(obj.update_at)
+    
+    def get_comment_count(self, obj):
+        comment_count = obj.comment_post.all().count()
+        return comment_count
         
 
 

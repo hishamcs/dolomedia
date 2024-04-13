@@ -6,7 +6,8 @@ import axios from 'axios';
 import Comment from '../comment/Comment';
 
 
-const Comments = ({postId}) => {
+const Comments = ({postId, setCommentCount}) => {
+  // console.log('post')
   const [content, setContent] = useState('')
   const [comments, setComments] = useState([])
   const userLogin = useSelector(state=>state.userLogin)
@@ -24,7 +25,7 @@ const Comments = ({postId}) => {
       }
     }
     const response = await axios.post('/posts/comment/',{'content':content, 'userId':userId, 'postId':postId},config)
-    
+    setCommentCount(response.data.length)
     setComments(response.data)
     setContent('')
   }
@@ -54,7 +55,7 @@ const Comments = ({postId}) => {
       <div className='comment' >
         {comments.map((comment) => (
         
-          <Comment comment={comment} key={comment.id}/>
+          <Comment comment={comment} key={comment.id} setComments={setComments} setCommentCount={setCommentCount}/>
         
         ))}
       </div>

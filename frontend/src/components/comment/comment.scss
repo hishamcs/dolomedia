@@ -10,17 +10,21 @@
             flex-direction: column;
             gap: 3px;
             align-items: flex-start;
-
-            .info-user {
-                    display: flex;
-                    gap: 20px;
-                    align-items: center;
-                    justify-content: space-between;
-                    .comment-time{
-                        font-size: x-small;
-                        font-weight: lighter;
-                        color: grey;
-                    }
+            .info-dt {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                .info-user {
+                        display: flex;
+                        gap: 20px;
+                        align-items: center;
+                        
+                        .comment-time{
+                            font-size: x-small;
+                            font-weight: lighter;
+                            color: grey;
+                        }
+                }
             }
 
             .sub{

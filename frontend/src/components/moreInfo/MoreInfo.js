@@ -6,10 +6,12 @@ import MenuItem from '@mui/material/MenuItem';
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import EditIcon from '@mui/icons-material/Edit';
 import FlagIcon from '@mui/icons-material/Flag';
+import DeleteDialog from '../DeleteDialog';
 
-export default function MoreInfo({info, userId}) {
-
+export default function MoreInfo({info, userId, title, setUpdateData, setUpdateDataCount}) {
+//   console.log('info : ', info)
   const [anchorEl, setAnchorEl] = useState(null);
+  const [deleteDialog, setDeleteDialog] = useState(false)
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -17,6 +19,10 @@ export default function MoreInfo({info, userId}) {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const handleDelete = () => {
+    setDeleteDialog(!deleteDialog)
+  }
 
   return (
     <div>
@@ -55,7 +61,7 @@ export default function MoreInfo({info, userId}) {
                         </ListItemIcon>
                         Edit
                     </MenuItem>
-                    <MenuItem onClick={handleClose}>
+                    <MenuItem onClick={handleDelete}>
                         <ListItemIcon>
                             <DeleteIcon fontSize='small'/>
                         </ListItemIcon>
@@ -92,7 +98,7 @@ export default function MoreInfo({info, userId}) {
         }
         
         
-      
+    <DeleteDialog title={title} deleteDialog={deleteDialog} setDeleteDialog={setDeleteDialog} id={info.id} setUpdateData={setUpdateData} setUpdateDataCount={setUpdateDataCount}/>
     </div>
   );
 }

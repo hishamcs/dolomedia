@@ -10,7 +10,9 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import MoreInfo from '../moreInfo/MoreInfo';
 
-const Comment = ({comment}) => {
+const Comment = ({comment, setComments, setCommentCount}) => {
+    const [replies, setReplies] = useState([])
+    const [repliesCount, setRepliesCount] = useState(comment.count_replies)
     const [replyOpen, setReplyOpen] = useState(false)
     const [replyFormOpen, setReplyFormOpen] = useState(false)
     const [commentLike, setCommentLike] = useState(comment.isUserLiked)
@@ -47,6 +49,10 @@ const Comment = ({comment}) => {
                 content:content
             }
         }).then((response) => {
+            console.log('res : ', response.data.length)
+            setReplies(response.data)
+            setRepliesCount(response.data.length)
+            setReplyFormOpen(false)
             setReplyOpen(true)
             setContent('')
         })
@@ -66,10 +72,17 @@ const Comment = ({comment}) => {
             <div className='comme-cont'>
                 <img src={comment.user.pro_pic} alt="" />
                 <div className='infoo'>
-                    <div className='info-user'>
+                    <div className='info-dt'>
+                        <div className='info-user'>
+                            <span>{comment.user.name}</span>
+                            <span className='comment-time'>{comment.time}</span>
+                        </div> 
+                        <MoreInfo info={comment} userId={userId} title='Comment' setUpdateData={setComments} setUpdateDataCount={setCommentCount}/>
+                    </div>
+                    {/* <div className='info-user'>
                         <span>{comment.user.name}</span>
                         <span className='comment-time'>{comment.time}</span>
-                    </div>
+                    </div> */}
                     
                     <p>{comment.content}</p>
                     <div className='sub'>
@@ -93,16 +106,16 @@ const Comment = ({comment}) => {
                     )}
                     
                     <div className='cmt-replies' onClick={()=>setReplyOpen(!replyOpen)}>
-                        {comment.count_replies > 0 &&   <span>
+                        {repliesCount > 0 &&   <span>
                                                             {replyOpen? <ArrowDropDownIcon />:<ArrowDropUpIcon />}
-                                                            {comment.count_replies} Replies
+                                                            {repliesCount} Replies
                                                         </span>}
                     </div>
                     
                 </div>
                 {/* <span className='date'>1 hour ago</span> */}
             </div>
-            {replyOpen && <Replies commentId={commentId}/>}
+            {replyOpen && <Replies commentId={commentId} replies={replies} setReplies={setReplies} setRepliesCount={setRepliesCount}/>}
         </div>
     )
 }

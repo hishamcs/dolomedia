@@ -29,7 +29,6 @@ function Posts({updatePosts, setUpdatePosts, userPosts}) {
       }
 
       const response = await axios?.get(`/posts/addposts/${userId}`, config)
-      console.log('posts : ', response.data)
       setPosts(response.data)
       
     }
@@ -48,7 +47,7 @@ function Posts({updatePosts, setUpdatePosts, userPosts}) {
   return (
     <div className='posts'>
       {posts?.map(post => (
-        <Post post={post} key={post.id} />
+        <Post post={post} key={post.id} setPosts={setPosts}/>
       ))}
     </div>
   )

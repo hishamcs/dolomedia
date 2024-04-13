@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, APIView
 from base.models import User
@@ -38,7 +38,7 @@ class PostsView(APIView):
         post_id = request.GET.get('postId')
         post = Posts.objects.get(id=post_id)
         post.delete()
-        posts = Posts.objects.all()
+        posts = Posts.objects.all().order_by('-id')
         serializer = self.serializer_class(posts, many=True)
         return Response(serializer.data)
     
@@ -180,6 +180,25 @@ class CommentView(APIView):
         
         comments = Comment.objects.filter(post__id=post_id, parent=None)
         serializer = self.serializer_class(comments, many=True, context={'user_id':user_id})
+        return Response(serializer.data)
+    
+    def delete(self, request):
+        comment_id = request.GET.get('commentId')
+        user_id = request.GET.get('userId')
+        comment = get_object_or_404(Comment, id=comment_id)
+        parent = comment.parent
+        comment_post = comment.post
+        comment.delete()
+        if parent:
+            print('parent of the comment : ', parent)
+            replies = parent.replies.all()
+            serializer = self.serializer_class(replies, many=True, context={'user_id':user_id})
+        else:
+            print('post of the comment : ', comment_post)
+            comments = Comment.objects.filter(post=comment_post, parent=None)
+            serializer = self.serializer_class(comments, many=True, context={'user_id':user_id})
+
+        
         return Response(serializer.data)
     
 

@@ -2,7 +2,6 @@ import './post.scss'
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
 import TextsmsOutlinedIcon from "@mui/icons-material/TextsmsOutlined";
-// import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
 import MoreInfo from '../moreInfo/MoreInfo';
 import { Link } from 'react-router-dom';
 import Comments from '../comments/Comments';
@@ -10,28 +9,26 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import LikeComponent from '../like/LikeComponent';
-import Dropdown from 'react-bootstrap/Dropdown'
-import DropdownButton from 'react-bootstrap/DropdownButton'
 import toast, { Toaster } from 'react-hot-toast';
 
-const Post = ({post}) => {
+const Post = ({post, setPosts}) => {
     // console.log('post : ',post)
     const userLogin = useSelector(state=>state.userLogin)
     const [postLike, setPostLike] = useState()
     const [likeCount, setLikeCount] = useState()
-    const [commentCount, setCommentCount] = useState()
+    const [commentCount, setCommentCount] = useState(post.comment_count)
     const [commentOpen, setCommentOpen] = useState(false)
     // const [dropDown, setDropDown] = useState(false)
     const {userInfo} = userLogin
     const userId = userInfo?.id
     
-    const handleReport = (postId) => {
-        console.log('post id : ', postId)
-        axios.patch('/posts/post-report/',{postId:postId}).then(response=> {
-            console.log(response.data.message)
-            toast('Report is submitted...')
-        })
-    }
+    // const handleReport = (postId) => {
+    //     console.log('post id : ', postId)
+    //     axios.patch('/posts/post-report/',{postId:postId}).then(response=> {
+    //         console.log(response.data.message)
+    //         toast('Report is submitted...')
+    //     })
+    // }
     const likePostHandler = () => {
         axios.get(`/posts/like-post/${userId}/${post.id}`).then(function (response) {
             const post_action = response.data.postliked
@@ -72,7 +69,7 @@ const Post = ({post}) => {
                         </div>
                     </div>
                     <div>
-                    <MoreInfo info={post} userId={userId}/>
+                    <MoreInfo info={post} userId={userId} title='Post' setUpdateData={setPosts}/>
                         {/* <DropdownButton size='sm' variant='none'>
                             <Dropdown.Item onClick={()=>handleReport(post.id)}>Report</Dropdown.Item>
                             
@@ -98,8 +95,8 @@ const Post = ({post}) => {
                          {commentCount} Comments
                     </div>
                 </div>
-                {commentOpen && <Comments postId={post.id} />}
-                <Toaster />
+                {commentOpen && <Comments postId={post.id} setCommentCount={setCommentCount}/>}
+                <Toaster position="bottom-left" reverseOrder={false}/>
             </div>
         </div>
     )
