@@ -8,8 +8,8 @@ from rest_framework.renderers import JSONRenderer
 
 def block_wrapper(func):
     def check_user_block(request):
-        print('data : ', request.body)
         token = request.META.get('HTTP_AUTHORIZATION')
+        # print(f'From middleware \n path:{request.path} and token:{token}')
         if token is None and request.path == '/api/users/login/':
             raw_data = request.body
             json_data = json.loads(raw_data.decode('utf-8'))

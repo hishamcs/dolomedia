@@ -13,16 +13,23 @@ const Replies = ({commentId, replies, setReplies, setRepliesCount}) => {
     // const [replies, setReplies] = useState([])
     const {userInfo} = userLogin 
     const userId = userInfo?.id
-    
+    const token = userInfo?.token
     
     
     useEffect(() => {
-        axios.get('/posts/comment/', {params: {commentId:commentId, userId:userId}}).then((response) => {
+        
+        const config = {
+            params:{commentId:commentId, userId:userId},
+            headers:{
+                Authorization: `Bearer ${token}`
+            }
+        }
+        axios.get('/posts/comment/', config).then((response) => {
             setReplies(response.data)
         })
-    }, [commentId, refreshReply, userId, setReplies])
-    
-    
+        
+    }, [commentId, refreshReply, userId, setReplies, token])
+
     
     return (
         <div className='replies'>

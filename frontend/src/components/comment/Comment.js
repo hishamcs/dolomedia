@@ -9,6 +9,7 @@ import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import MoreInfo from '../moreInfo/MoreInfo';
+import toast from 'react-hot-toast';
 
 const Comment = ({comment, setComments, setCommentCount}) => {
     const [replies, setReplies] = useState([])
@@ -18,6 +19,8 @@ const Comment = ({comment, setComments, setCommentCount}) => {
     const [commentLike, setCommentLike] = useState(comment.isUserLiked)
     const [commentLikeCt, setCommentLikeCt] = useState(comment.likeCount)
     const [content, setContent] = useState('')
+    const [editComment, setEditComment] = useState(false)
+    const [editCmtContent, setEditCmtContent] = useState(comment.content)
     const userLogin = useSelector(state=>state.userLogin)
     const userPic = useSelector(state=>state.userPicture)
     const {userPicture} = userPic
@@ -26,6 +29,32 @@ const Comment = ({comment, setComments, setCommentCount}) => {
     const userId = userInfo?.id
     const commentId = comment?.id
 
+
+    const handleCmtUpdate = async(e) => {
+        e.preventDefault()
+        const token = userInfo?.token
+        const data = {'commentId':comment.id,'userId':userId, 'content':editCmtContent}
+        const url = '/posts/comment/'
+        const config = {
+            headers:{
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const response = await axios.patch(url, data, config)
+            
+            if(response.status===200) {
+                setEditComment(false)
+                setComments(response.data.data)
+                toast.success(response.data.message)
+            } else{
+                toast.error(response.data.messgae)
+            }
+        } catch(error) {
+            console.log(error)
+            toast.error('error occured during updation')
+        }
+    } 
     const handlelike = async() => {
         const config = {
             headers:{
@@ -47,6 +76,9 @@ const Comment = ({comment, setComments, setCommentCount}) => {
                 commentId:commentId,
                 userId:userId,
                 content:content
+            },
+            headers:{
+                Authorization:`Bearer ${userInfo?.token}`
             }
         }).then((response) => {
             console.log('res : ', response.data.length)
@@ -72,48 +104,57 @@ const Comment = ({comment, setComments, setCommentCount}) => {
             <div className='comme-cont'>
                 <img src={comment.user.pro_pic} alt="" />
                 <div className='infoo'>
-                    <div className='info-dt'>
-                        <div className='info-user'>
-                            <span>{comment.user.name}</span>
-                            <span className='comment-time'>{comment.time}</span>
-                        </div> 
-                        <MoreInfo info={comment} userId={userId} title='Comment' setUpdateData={setComments} setUpdateDataCount={setCommentCount}/>
-                    </div>
-                    {/* <div className='info-user'>
-                        <span>{comment.user.name}</span>
-                        <span className='comment-time'>{comment.time}</span>
-                    </div> */}
-                    
-                    <p>{comment.content}</p>
-                    <div className='sub'>
-                        {/* <p onClick={handlelike}>Like</p> */}
-                        <p onClick={handlelike}>
-                            {commentLike ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
-                            <LikeComponent likeCount={commentLikeCt} />
-                        </p>
-                        {/* <p onClick={()=>setReplyOpen(!replyOpen)}>Reply</p> */}
-                        <p onClick={()=>setReplyFormOpen(!replyFormOpen)}>Reply</p>
-                    </div>
-                    {replyFormOpen && (
-                                    <form onSubmit={handleSubmit}>
-                                        <div className='reply-send'>
-                                            <img src={proPicSrc} alt="" />
-                                            <input type='text' placeholder='write your reply' required value={content} onChange={(e)=>setContent(e.target.value)}/>
-                                            <button type='submit' className=''>Reply</button>
-                                            <span onClick={()=>setReplyFormOpen(!replyFormOpen)}>Cancel</span>
-                                        </div>
-                                    </form>
-                    )}
-                    
-                    <div className='cmt-replies' onClick={()=>setReplyOpen(!replyOpen)}>
-                        {repliesCount > 0 &&   <span>
-                                                            {replyOpen? <ArrowDropDownIcon />:<ArrowDropUpIcon />}
-                                                            {repliesCount} Replies
-                                                        </span>}
-                    </div>
+                    {!editComment ? <>
+                                    <div className='info-dt'>
+                                        <div className='info-user'>
+                                            <span>{comment.user.name}</span>
+                                            <span className='comment-time'>{comment.time}</span>
+                                        </div> 
+                                        <MoreInfo info={comment} userId={userId} title='Comment' setUpdateData={setComments} setUpdateDataCount={setCommentCount} setEdit={setEditComment}/>
+                                    </div>
+                                    <p>{comment.content}</p>
+                                    <div className='sub'>
+                                        <p onClick={handlelike}>
+                                            {commentLike ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+                                            <LikeComponent likeCount={commentLikeCt} />
+                                        </p>
+                                        <p onClick={()=>setReplyFormOpen(!replyFormOpen)}>Reply</p>
+                                    </div>
+
+                                    {replyFormOpen && (
+                                        <form onSubmit={handleSubmit}>
+                                            <div className='reply-send'>
+                                                <img src={proPicSrc} alt="" />
+                                                <input type='text' placeholder='write your reply' required value={content} onChange={(e)=>setContent(e.target.value)}/>
+                                                <button type='submit' className=''>Reply</button>
+                                                <span onClick={()=>setReplyFormOpen(!replyFormOpen)}>Cancel</span>
+                                            </div>
+                                        </form>
+                                    )}
+
+                                    <div className='cmt-replies' onClick={()=>setReplyOpen(!replyOpen)}>
+                                        {repliesCount > 0 &&   <span>
+                                                                    {replyOpen? <ArrowDropDownIcon />:<ArrowDropUpIcon />}
+                                                                    {repliesCount} Replies
+                                                                </span>}
+                                    </div>
+                                    </>
+                                 :(
+                                    <div className='edit-comment'>
+                                        <form onSubmit={handleCmtUpdate}>
+                                            <div className='reply-send'>
+                                
+                                                <input type='text' placeholder='write your comment' required value={editCmtContent} onChange={(e)=>setEditCmtContent(e.target.value)}/>
+                                                <button type='submit' className=''>Update</button>
+                                                <span onClick={()=> setEditComment(false)}>Cancel</span>
+                                            </div>              
+                                        </form>
+                                    </div>
+                                 )
+                    }
                     
                 </div>
-                {/* <span className='date'>1 hour ago</span> */}
+                
             </div>
             {replyOpen && <Replies commentId={commentId} replies={replies} setReplies={setReplies} setRepliesCount={setRepliesCount}/>}
         </div>

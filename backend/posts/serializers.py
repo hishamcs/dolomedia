@@ -12,7 +12,7 @@ class PostSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Posts
-        fields = ['id', 'user', 'content', 'image', 'likeCount', 'post_time', 'comment_count']
+        fields = ['id', 'user', 'content', 'image', 'likeCount', 'post_time', 'comment_count', 'video']
 
     def get_post_time(self, obj):
         return format_time(obj.update_at)
@@ -20,6 +20,10 @@ class PostSerializer(serializers.ModelSerializer):
     def get_comment_count(self, obj):
         comment_count = obj.comment_post.all().count()
         return comment_count
+    # def save(self,**kwargs):
+    #     print('validated data : ', self.validated_data)
+    #     instance = super().save(**kwargs)
+    #     return instance
         
 
 

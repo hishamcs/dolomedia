@@ -8,7 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import FlagIcon from '@mui/icons-material/Flag';
 import DeleteDialog from '../DeleteDialog';
 
-export default function MoreInfo({info, userId, title, setUpdateData, setUpdateDataCount}) {
+export default function MoreInfo({info, userId, title, setUpdateData, setUpdateDataCount, setEdit}) {
 //   console.log('info : ', info)
   const [anchorEl, setAnchorEl] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState(false)
@@ -19,6 +19,10 @@ export default function MoreInfo({info, userId, title, setUpdateData, setUpdateD
   const handleClose = () => {
     setAnchorEl(null);
   };
+  
+  const handleEdit = () => {
+    setEdit(true)
+  }
 
   const handleDelete = () => {
     setDeleteDialog(!deleteDialog)
@@ -55,7 +59,7 @@ export default function MoreInfo({info, userId, title, setUpdateData, setUpdateD
                     }}
                 >
                 
-                    <MenuItem onClick={handleClose}>
+                    <MenuItem onClick={handleEdit}>
                         <ListItemIcon>
                             <EditIcon fontSize='small'/>
                         </ListItemIcon>
@@ -99,6 +103,7 @@ export default function MoreInfo({info, userId, title, setUpdateData, setUpdateD
         
         
     <DeleteDialog title={title} deleteDialog={deleteDialog} setDeleteDialog={setDeleteDialog} id={info.id} setUpdateData={setUpdateData} setUpdateDataCount={setUpdateDataCount}/>
+    
     </div>
   );
 }

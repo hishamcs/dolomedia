@@ -3,7 +3,9 @@ from .views import *
 
 
 urlpatterns = [
-    path('addposts/<int:user_id>', PostsView.as_view()),
+    path('fetch-posts/', PostsView.as_view()),
+    path('addposts/', PostsView.as_view()),
+    path('update-posts/', PostsView.as_view()),
     path('admin-posts/', PostsView.as_view()),
     path('usersuggestion/<int:user_id>',UserSuggestions.as_view()),
     path('follow-user/<int:user_id>/<int:fuser_id>',FollowUser.as_view()),

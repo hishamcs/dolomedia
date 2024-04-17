@@ -1,56 +1,103 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import APIView
 from base.models import User
 from .serializers import PostSerializer,CommentSerializer,FollowListSerializer, NotificationSerializer
-from django.db.models import Q
 from base.serializers import UserSerializer
 from .models import FollowList,Posts,PostLike,Comment,Notification, OpenedNotification, CommentLike
-from django.db.models import Case, When,Count
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import F
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.conf import settings
+from rest_framework import status
+import os
 
 # Create your views here.
 
 class PostsView(APIView):
-
+    permission_classes = [IsAuthenticated]
     serializer_class = PostSerializer
-    def post(self, request, user_id):
 
-        print('request.data : ', request.data)
-        user = User.objects.filter(id=user_id).first()
+    def post(self, request):
+        user_id = request.data.get('userId')
+        if not user_id:
+            return Response({'error : userId is required...'}, status=status.HTTP_400_BAD_REQUEST)
+        user = get_object_or_404(User, id=user_id)
+        serializer = self.serializer_class(data=request.data)
         content = request.data.get('content')
         image = request.data.get('image')
-        serializer = self.serializer_class(data=request.data)
+        video = request.data.get('video')
         if serializer.is_valid():
-            serializer.save(user=user, image=image,content=content)
+            serializer.save(user=user, image=image, content=content, video=video)
+            return Response({'message':'success'}, status=status.HTTP_201_CREATED)
         else:
             print(serializer.errors)
+            return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        print('request .data : ', request.data)
+        user_id = request.GET.get('userId')
+        if user_id is None:
+            return Response({'error':'User id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = get_object_or_404(User, id=user_id)
+            user_following = list(user.following.all().values_list('following_id',flat=True))
+            user_following.append(user.id)
+            posts = Posts.objects.filter(user__in=user_following)
+            serializer = self.serializer_class(posts, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print('exception  :', e)
+            return Response({'error':str(e)}, status=status.HTTP_404_NOT_FOUND)
+        
+        
 
-        return Response({'message':'success'})
-    
-    def get(self, request,user_id):
-        posts = Posts.objects.all().order_by('-id')
-        serializer = self.serializer_class(posts, many=True)
-        return Response(serializer.data)
-    
     def delete(self, request):
         post_id = request.GET.get('postId')
-        post = Posts.objects.get(id=post_id)
-        post.delete()
-        posts = Posts.objects.all().order_by('-id')
-        serializer = self.serializer_class(posts, many=True)
-        return Response(serializer.data)
+        try:
+            post = Posts.objects.get(id=post_id)
+            if post.image:
+                image_file_path = os.path.join(settings.MEDIA_ROOT, str(post.image))
+                if os.path.exists(image_file_path):
+                    os.remove(image_file_path)
+                else:
+                    return Response({'error':'Image file doesnot exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+            if post.video:
+                video_file_path = os.path.join(settings.MEDIA_ROOT, str(post.video))
+                if os.path.exists(video_file_path):
+                    os.remove(video_file_path)
+                else:
+                    return Response({'error':'Video file doesnot exist'},status=status.HTTP_404_NOT_FOUND)
+            post.delete()
+            posts = Posts.objects.all()
+            serializer = self.serializer_class(posts, many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except Posts.DoesNotExist:
+            return Response({'error':'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
     
     def patch(self, request):
+        print('daat : ', request.data)
         post_id = request.data.get('postId')
-        post = Posts.objects.get(id=post_id)
-        post.report_count += 1
-        post.save()
-        return Response({'message':'success'})
-    
+        if post_id is None:
+            return Response({'error':'postid is required'}, status=status.HTTP_400_BAD_REQUEST)
+        post = get_object_or_404(Posts, id=post_id)
+        serializer = self.serializer_class(instance=post, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message':'success'}, status=status.HTTP_200_OK)
+        else:
+            print('errors : ', serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # post_id = request.data.get('postId')
+        # post = Posts.objects.get(id=post_id)
+        # post.report_count += 1
+        # post.save()
 
 class UserSuggestions(APIView):
     def get(self,request,user_id):
@@ -118,13 +165,14 @@ class PostLikes(APIView):
 
 class CommentView(APIView):
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
     def post(self,request):
         comment_id = request.data.get('commentId')
         
         if comment_id:
-            parent = Comment.objects.get(id=comment_id)
+            parent = get_object_or_404(Comment, id=comment_id)
             user_id = request.data.get('userId')
-            user = User.objects.get(id=user_id)
+            user = get_object_or_404(User, id=user_id)
             reply_id = request.data.get('replyId', None)
             reply = Comment.objects.filter(id=reply_id)
             post = parent.post
@@ -141,18 +189,20 @@ class CommentView(APIView):
                     status = f'{user.username} is replied to your comment'
                     Notification.objects.create(sender=user, recipient=reply[0].user, post=post, comment=cmt, action="Reply", noti_content=status)
                     OpenedNotification.objects.filter(user=reply[0].user).update(noti_count=F('noti_count')+1)
+                replies = Comment.objects.filter(parent=parent)
+                serializer = self.serializer_class(replies, many=True)
+                return Response(serializer.data)
             else:
                 print(serializer.errors)
-            replies = Comment.objects.filter(parent=parent)
-            serializer = self.serializer_class(replies, many=True)
-            return Response(serializer.data)
+                return Response(serializer.errros)
+            
             
         else:
             content = request.data.get('content')
             user_id = request.data.get('userId')
             post_id = request.data.get('postId')
-            user = User.objects.filter(id=user_id).first()
-            post_instance = Posts.objects.get(id=post_id) 
+            user = get_object_or_404(User, id=user_id) 
+            post_instance = get_object_or_404(Posts, id=post_id)
             serializer = self.serializer_class(data=request.data)
             
             if serializer.is_valid():
@@ -161,15 +211,16 @@ class CommentView(APIView):
                     status = f'{user.username} commented on your post'
                     Notification.objects.create(sender=user, recipient=post_instance.user, post=post_instance, comment=cmt, action="Comment", noti_content=status)
                     OpenedNotification.objects.filter(user=post_instance.user).update(noti_count=F('noti_count')+1)
+                comments = Comment.objects.filter(post__id=post_id, parent=None)
+                serializer = self.serializer_class(comments, many=True)
+                return Response(serializer.data)
             else:
                 print(serializer.errors)
-            comments = Comment.objects.filter(post__id=post_id, parent=None)
-            serializer = self.serializer_class(comments, many=True)
-            return Response(serializer.data)
+                return Response(serializer.errors)
+            
 
     
     def get(self,request):
-        
         comment_id = request.GET.get('commentId')
         post_id = request.GET.get('postId')
         user_id = request.GET.get('userId')
@@ -187,6 +238,10 @@ class CommentView(APIView):
     def delete(self, request):
         comment_id = request.GET.get('commentId')
         user_id = request.GET.get('userId')
+        if not comment_id:
+            return Response({'error':'comment id is required...'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user_id:
+            return Response({'error':'user id is required...'}, status=status.HTTP_400_BAD_REQUEST)
         comment = get_object_or_404(Comment, id=comment_id)
         parent = comment.parent
         comment_post = comment.post
@@ -201,7 +256,29 @@ class CommentView(APIView):
             serializer = self.serializer_class(comments, many=True, context={'user_id':user_id})
 
         
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request):
+        comment_id = request.data.get('commentId')
+        if not comment_id:
+            return Response({'error':'Comment id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            comment = get_object_or_404(Comment, id=comment_id)
+        except Comment.DoesNotExist:
+            return Response({'error':'Comment Doesnot exist'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.serializer_class(instance=comment, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            if comment.parent:
+                comments = Comment.objects.filter(parent=comment.parent) # Replies
+            else:
+                comments = Comment.objects.filter(post=comment.post)
+            serializer = self.serializer_class(comments, many=True)
+            return Response({'message':'updated successfully', 'data':serializer.data}, status=status.HTTP_200_OK)
+        else:
+            print(serializer.errors)
+            return Response({'error':serializer.errors}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
     
 
 class ProfileView(APIView):

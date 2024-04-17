@@ -4,6 +4,7 @@ import {useNavigate} from 'react-router-dom'
 import Share from '../components/share/Share'
 import Posts from '../components/posts/Posts'
 import './home.scss'
+import Loader from '../components/Loader'
 
 function HomeScreen() {
     const userLogin = useSelector(state=> state.userLogin)
@@ -22,6 +23,7 @@ function HomeScreen() {
     return(
         <div className='home'>
             <Share userInfo={userInfo} userPicture={userPicture} onUpdatePosts={()=> setUpdatePosts(true)} />
+            {/* <Loader /> */}
             <Posts updatePosts={updatePosts} setUpdatePosts={setUpdatePosts}/>
         </div>
     )

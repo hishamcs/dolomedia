@@ -18,26 +18,35 @@ export default function DeleteDialog({title, deleteDialog, setDeleteDialog, id, 
     setDeleteDialog(false)
   };
 
+
+
   const handleDeleteSubmit = async() => {
-    // console.log('id : ', id)
-    if (title === 'Post') {
-        const response = await axios.delete('/posts/post-delete/', {params:{'postId':id}})
-        handleClose()
-        setUpdateData(response.data)
-    } else if (title==='Comment') {
-        const response = await axios.delete('/posts/comment/', {params:{'commentId':id, 'userId':userId}})
+    const token = userInfo?.token
+    let params, url;
+
+    if (title==='Post') {
+      params = {'postId':id}
+      url = '/posts/post-delete/'
+    } else if (title=== 'Comment' || title === 'Reply') {
+      params = {'commentId':id, 'userId':userId}
+      url = '/posts/comment/'
+    } else return;
+
+    try {
+      const config = {
+        params:params,
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
+      }
+      const response = await axios.delete(url, config)
+      if(title=== 'Comment' || title === 'Reply') {
         setUpdateDataCount(response.data.length)
-        handleClose()
-        setUpdateData(response.data)
-    } else if (title === 'Reply') {
-        const response = await axios.delete('/posts/comment/', {params:{'commentId':id, 'userId':userId}})
-        setUpdateDataCount(response.data.length)
-        handleClose()
-        setUpdateData(response.data)
-    }
-    
-    
-    toast.success('Deleted...', {
+      }
+      handleClose()
+      setUpdateData(response.data)
+
+      toast.success('Deleted...', {
         style: {
           border: '1px solid #713200',
           padding: '16px',
@@ -47,7 +56,12 @@ export default function DeleteDialog({title, deleteDialog, setDeleteDialog, id, 
           primary: '#713200',
           secondary: '#FFFAEE',
         },
-    });
+      });
+    } catch(error) {
+      console.log('error : ', error)
+      toast.error(error.response.data.detail)
+      handleClose()
+    }  
   } 
 
   return (

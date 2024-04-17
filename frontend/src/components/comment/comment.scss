@@ -10,6 +10,16 @@
             flex-direction: column;
             gap: 3px;
             align-items: flex-start;
+            .edit-comment{
+                width: 100%;
+                display: flex;
+                gap: 5px;
+                textarea{
+                    width: 100%;
+                    padding: 4px 10px;
+                    
+                }
+            }
             .info-dt {
                 width: 100%;
                 display: flex;

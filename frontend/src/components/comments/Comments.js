@@ -21,7 +21,8 @@ const Comments = ({postId, setCommentCount}) => {
     e.preventDefault()
     const config = {
       headers:{
-        'Content-type':'application/json'
+        'Content-type':'application/json',
+        Authorization: `Bearer ${userInfo?.token}`
       }
     }
     const response = await axios.post('/posts/comment/',{'content':content, 'userId':userId, 'postId':postId},config)
@@ -32,11 +33,13 @@ const Comments = ({postId, setCommentCount}) => {
 
   useEffect(()=> {
     const config = {
+      params: {'userId':userId, 'postId':postId},
       headers:{
-        'Content-type':'application/json'
+        'Content-type':'application/json',
+        Authorization:`Bearer ${userInfo?.token}`
       }
     }
-    axios.get('/posts/comment/',{params:{'userId':userId, 'postId':postId}}, config).then((response)=> {
+    axios.get('/posts/comment/', config).then((response)=> {
       console.log('res : ', response.data)
       setComments(response.data)
     })

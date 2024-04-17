@@ -204,3 +204,4 @@ AUTH_USER_MODEL = 'base.User'
 MEDIA_URL = 'media/'
 
 MEDIA_ROOT = 'media/'
+DATA_UPLOAD_MAX_MEMORY_SIZE = None

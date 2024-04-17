@@ -8,10 +8,19 @@ class Posts(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField(blank=True)
     image = models.ImageField(upload_to='posts/', null=True, blank=True)
+    video = models.FileField(upload_to='posts/video', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
     likeCount = models.IntegerField(default=0)
     report_count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.user} - {self.content[:20]}'
+    
+    class Meta:
+        ordering = ['-update_at']
+    
+    
     
 
 
@@ -33,9 +42,12 @@ class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     post = models.ForeignKey(Posts, on_delete=models.CASCADE, related_name='comment_post')
     content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)
     likeCount = models.IntegerField(default=0)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='replies')
+
+    class Meta:
+        ordering = ['-timestamp']
 
 class CommentLike(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='liked_comment')

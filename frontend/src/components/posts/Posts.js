@@ -22,15 +22,20 @@ function Posts({updatePosts, setUpdatePosts, userPosts}) {
         setPosts(userPosts)
       } else {
     const fetchPosts = async() => {
+      const token = userInfo?.token
       const config = {
+        params:{userId},
         headers:{
-          'Content-type':'application/json'
+          'Content-type':'application/json',
+          Authorization:`Bearer ${token}`
         }
       }
-
-      const response = await axios?.get(`/posts/addposts/${userId}`, config)
-      setPosts(response.data)
-      
+      try {
+        const response = await axios.get(`/posts/fetch-posts/`,config)
+        setPosts(response.data)
+      } catch(error) {
+        console.log('error : ', error)
+      }
     }
     if(updatePosts) {
       console.log('new post')
@@ -47,7 +52,7 @@ function Posts({updatePosts, setUpdatePosts, userPosts}) {
   return (
     <div className='posts'>
       {posts?.map(post => (
-        <Post post={post} key={post.id} setPosts={setPosts}/>
+        <Post post={post} key={post.id} setPosts={setPosts} setUpdatePosts={setUpdatePosts}/>
       ))}
     </div>
   )
