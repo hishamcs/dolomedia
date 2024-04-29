@@ -73,9 +73,14 @@ def blo_unblo_user(request, pk):
         return Response({'message':'User is unblocked...','title':'Unblocked'})
     
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def search_user(request):
-    search_name = request.GET.get('user')
+    search_name = request.GET.get('user').strip()
+    if not search_name:
+        return Response({'message':'please enter the username'}, status=status.HTTP_400_BAD_REQUEST)
     user_id = request.GET.get('userId')
+    if not user_id or not user_id.isdigit():
+        return Response({'message':'Invalid user id'}, status=status.HTTP_400_BAD_REQUEST)
     users = User.objects.filter(first_name__contains=search_name).exclude(id=user_id)
     searilizer = UserSerializer(users, many=True)
     return Response(searilizer.data)

@@ -11,7 +11,7 @@ function Example({notifications, setNotifications, notificationList}) {
           <Modal.Title>Notifications</Modal.Title>
         </Modal.Header>
         {notificationList.map(notification => (
-            <Modal.Body>
+            <Modal.Body key={notification.id}>
                 {notification.noti_content}
                 <span className=''></span>
             </Modal.Body>

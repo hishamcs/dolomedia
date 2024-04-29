@@ -12,6 +12,7 @@ def block_wrapper(func):
         # print(f'From middleware \n path:{request.path} and token:{token}')
         if token is None and request.path == '/api/users/login/':
             raw_data = request.body
+            # print('raw data :', raw_data)
             json_data = json.loads(raw_data.decode('utf-8'))
             username = json_data['username']
             password = json_data['password']

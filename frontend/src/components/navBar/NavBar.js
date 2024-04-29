@@ -23,6 +23,7 @@ function NavBar() {
   const userPicture = useSelector(state=>state.userPicture)
   const userPic = userPicture.userPicture
   const proPic = userPic?.pro_pic
+  // const [socket, setSocket] = useState(null)
   const [userLists, setUserLists] = useState([])
   const [detail, setDetail] = useState(false)
   const {userInfo} = userLogin
@@ -38,23 +39,30 @@ function NavBar() {
     })
   }
   }
-  useEffect(() => {
-    if (userId) {
+  
+
+
+  useEffect(()=> {
+    if(userId) {
       dispatch(fetchPicture(userId))
-    }
-    const socket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/${userId}/`)
+      const skt = new WebSocket(`ws://127.0.0.1:8000/ws/notification/${userId}/`)
+      
+      skt.onopen= function(e) {
+        console.log('connection established...')
+        
+      }
+      skt.onmessage = function(e){
+        const data = JSON.parse(e.data)
+        setNotiCount(data.message)
+      }
 
-    socket.onopen = function(e) {
-      console.log('connection established..')
-    }
+      skt.onclose = (e) => {
+        console.log('socket disconnected...')
+      }
 
-    socket.onmessage = function(e) {
-      const data = JSON.parse(e.data)
-      setNotiCount(data.message)
-    }
-
-    socket.onclose = function(e) {
-      console.log('e :', e)
+      return () => {
+        skt.close()
+      }
     }
   }, [userId, dispatch])
 
@@ -89,7 +97,9 @@ function NavBar() {
         </div>
 
         <div className='right'>
-            <MessageOutlinedIcon />
+            <Link to='/chat/'>
+              <MessageOutlinedIcon />
+            </Link>
             <div className='notification'  onClick={handleFetchNotifications}>
               
               <NotificationsNoneOutlinedIcon/>

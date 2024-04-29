@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User
+from .models import User, ChatRoom, Message
 from django.contrib.auth.admin import UserAdmin
 # Register your models here.
 class UserAccountAdmin(admin.ModelAdmin):
@@ -7,4 +7,6 @@ class UserAccountAdmin(admin.ModelAdmin):
 
 
 admin.site.register(User,UserAccountAdmin)
+admin.site.register(ChatRoom)
+admin.site.register(Message)
 

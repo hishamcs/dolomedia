@@ -14,7 +14,7 @@ import {
 import Profile from './screens/Profile';
 import PostListScreen from './screens/PostListScreen';
 import ChatScreen from './screens/ChatScreen';
-
+import { Toaster } from 'react-hot-toast';
 
 
 function App() {
@@ -76,6 +76,7 @@ function App() {
   return (
     <div>
       <RouterProvider router = {router}/>
+      <Toaster position="top-center"reverseOrder={false}/>
     </div>
   )
 }

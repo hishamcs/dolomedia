@@ -1,0 +1,36 @@
+.chat-search {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    .searchBar{
+        background-color: rgb(177, 171, 171);
+        flex: 1;
+        display: flex;
+        padding: 10px;
+        align-items: center;
+        gap: 20px;
+        border-radius: 10px;
+        input {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            flex: 1;
+            color: white;
+        }
+
+        svg {
+            color: white;
+            cursor: pointer;
+        }
+    }
+
+    .add {
+        background-color: rgb(179, 179, 167);
+        border-radius: 5px;
+        padding: 5px;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+    }
+}
