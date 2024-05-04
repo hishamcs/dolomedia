@@ -3,14 +3,16 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
-from .serializers import UserSerializer, UserSerializerWithToken, UserPictureSerailzer
-from .models import User
+from .serializers import *
+from .models import User, ChatRoom, UserOnlineStatus
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from posts.models import OpenedNotification
 import base64
-import uuid
-
+from django.db.models import Q
+from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
+from django.db.models import F
 
 # Create your views here.
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -53,6 +55,7 @@ def registerUser(request):
             phone = data['phoneNumber']
         )
         OpenedNotification.objects.create(user=user)
+        UserOnlineStatus.objects.create(user=user)
         serializer = UserSerializerWithToken(user)
         return Response(serializer.data)
     except:
@@ -149,4 +152,61 @@ def update_user_pic(request):
             return Response({'message':'Cover pic updated','cover_pic':user.cover_pic.url})
     except User.DoesNotExist:
         return Response({'error':'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def chatroom(request):
+    
+    user_id = request.data.get('userId')
+    receiver_id = request.data.get('receiverId')
+    try:
+        user_id = int(user_id)
+        receiver_id = int(receiver_id)
+    except (TypeError, ValueError):
+        return Response({'message':'Invalid user id or receiver id '}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if user_id == receiver_id:
+        return Response({'message':"user id and receiver id can't be same"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        chatroom = ChatRoom.objects.filter(Q(user1_id=user_id,user2_id=receiver_id) | Q(user1_id=receiver_id, user2_id=user_id)).first()
+        if not chatroom:
+            chatroom = ChatRoom.objects.create(user1_id=user_id,user2_id=receiver_id)
+        serializer = ChatroomSerializer(chatroom)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except IntegrityError:
+        return Response({'message':'Failed to create chatroom. Invalid user id or receiver id'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        return Response({'message':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def chatlist(request):
+    user_id = request.data.get('userId')
+    try:
+        user_id = int(user_id)
+    except(ValueError, TypeError):
+        return Response({'message':'Invalid user id'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    chatlist = ChatRoom.objects.filter(Q(user1_id=user_id) | Q(user2_id=user_id))
+    serializer = ChatroomSerializer(chatlist, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getChatroomMsg(request):
+    try:
+        room_id = request.GET.get('chatroomId')
+        if not room_id:
+            return Response({'detail':'Room id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        room = get_object_or_404(ChatRoom, id=room_id)
+        messages = room.messages.all()
+        # messages.update(is_read=True)
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data)
+    except ValueError:
+        return Response({'detail':'Invalid room id'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'detail':str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
     

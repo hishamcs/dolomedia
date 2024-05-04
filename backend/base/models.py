@@ -11,9 +11,13 @@ class User(AbstractUser):
 class ChatRoom(models.Model):
     user1 = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='user1',null=True)
     user2 = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='user2', null=True)
+
+    class Meta:
+        ordering = ['-id']
     
     def __str__(self):
         return f'{self.user1.username}<---->{self.user2.username}'
+    
     
 
 class Message(models.Model):
@@ -25,5 +29,25 @@ class Message(models.Model):
 
     def __str__(self):
         return self.sender.username
+    
+
+class UserOnlineStatus(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True)
+    is_online = models.BooleanField(null=True, blank=True, default=False)
+    connections = models.PositiveIntegerField(null=True, blank=True,default=0)
+
+
+
+    def __str__(self):
+        return f'{self.user.username}--{self.connections} --{self.is_online}'
+
+    def update_status(self):
+        if self.connections>0:
+            self.is_online =True
+        else:
+            self.is_online = False
+        self.save()
+
+
     
     

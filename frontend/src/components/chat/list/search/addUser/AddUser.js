@@ -1,12 +1,14 @@
 import { useSelector } from 'react-redux'
 import './addUser.scss'
 import axios from 'axios'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import toast from "react-hot-toast";
+import ChatContext from '../../../../../context/ChatContext';
 
 
 const AddUser = () => {
     const {token, id} = useSelector(state=>state.userLogin.userInfo)
+    const {fetchChatlist} = useContext(ChatContext)
     const [users, setUsers] = useState([])
     const [userCount, setUserCount] = useState()
     const handleSubmit = async(e) => {
@@ -40,7 +42,26 @@ const AddUser = () => {
     }
 
     const handleAdd = async(receiverId) => {
-        
+        const data = {'userId':id, 'receiverId':receiverId}
+        const config = {
+            headers: {
+                'Content-type':'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try{
+            const response = await axios.post('/api/chatroom/', data, config)
+            console.log(response)
+            if(response.status === 200) {
+                fetchChatlist()
+                console.log('success')
+            }
+        } catch(error) {
+            toast.error(error.response.data 
+                            ? error.response.data.message
+                            : error.message
+                        )
+        }
     }
 
 

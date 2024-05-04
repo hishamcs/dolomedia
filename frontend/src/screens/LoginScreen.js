@@ -47,7 +47,6 @@ function LoginScreen({location = {search:''}, history}) {
             dispatch(login(email, '12345'))
         })
     }
-
     return (
         <FormContainer>
             <h1>Sign In</h1>

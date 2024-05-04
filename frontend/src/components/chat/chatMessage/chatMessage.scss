@@ -97,9 +97,14 @@
                 align-self: flex-end;
                 p{
                     background-color: rgb(47, 108, 231);
-                    border-top-right-radius: 80px;
-                    border-bottom-right-radius: 0px;
                     color: white;
+                }
+
+                .alert-send{
+                    background-color: red;
+                    color: white;
+                    padding: 5px;
+                    border-radius: 5px;
                 }
             }
         }

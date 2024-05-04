@@ -4,6 +4,7 @@ import NavBar from '../components/navBar/NavBar'
 import { useSelector } from 'react-redux'
 import Chat from '../components/chat/Chat'
 import './chatScreen.scss'
+import { ChatProvider } from '../context/ChatContext'
 
 function ChatScreen() {
     const userLogin = useSelector(state=>state.userLogin)
@@ -21,7 +22,9 @@ function ChatScreen() {
         <>
             <NavBar />
             <div className='chat-container'>
-                <Chat />
+                <ChatProvider >
+                    <Chat />
+                </ChatProvider>
             </div>
         </>
     )

@@ -13,5 +13,8 @@ urlpatterns = [
     path('user-search/', views.search_user, name='search_user'),
     path('otp-generation/', views.generate_otp),
     path('user/profile/update-pic/', views.update_user_pic, name='user_pic_udpate'),
-    path('user/profile/fetch-user-pics/', views.fetch_user_pic, name='user_pic')
+    path('user/profile/fetch-user-pics/', views.fetch_user_pic, name='user_pic'),
+    path('chatroom/', views.chatroom, name='chatroom'),
+    path('chatlist/',views.chatlist, name='chatlist'),
+    path('chatroom/messages/', views.getChatroomMsg, name='getroom_msgs'),
 ]
