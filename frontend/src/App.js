@@ -6,10 +6,12 @@ import HomeScreen from './screens/HomeScreen';
 import Navbar from './components/navBar/NavBar'
 import LeftBar from './components/leftBar/LeftBar';
 import RightBar from './components/rigthBar/RightBar';
+import { useSelector} from 'react-redux';
 import {
   createBrowserRouter,
   RouterProvider,
   Outlet,
+  Navigate
 } from "react-router-dom";
 import Profile from './screens/Profile';
 import PostListScreen from './screens/PostListScreen';
@@ -17,8 +19,10 @@ import ChatScreen from './screens/ChatScreen';
 import { Toaster } from 'react-hot-toast';
 
 
-function App() {
 
+function App() {
+  const {userInfo} = useSelector(state=>state?.userLogin)
+  console.log('userInfo : ', userInfo)
   const Layout = () => {
     return(
       <div className='theme-light'>
@@ -33,7 +37,12 @@ function App() {
       </div>
     )
   }
-
+  const ProtectedRoute = ({children}) => {
+    if(!userInfo) {
+      return <Navigate to="/" />
+    }
+    return children
+  }
   const router = createBrowserRouter([
     {
       path: "/",
@@ -41,7 +50,11 @@ function App() {
     },
     {
       path: "/home",
-      element: (<Layout />),
+      element: (
+                <ProtectedRoute >
+                  <Layout />
+                </ProtectedRoute>
+              ),
       children: [
         {
           path: "/home",
@@ -67,7 +80,9 @@ function App() {
     },
     {
       path:"/chat/",
-      element:<ChatScreen />
+      element:(<ProtectedRoute>
+                  <ChatScreen />
+              </ProtectedRoute>)
     }
     
   ])

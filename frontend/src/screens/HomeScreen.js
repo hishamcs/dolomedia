@@ -14,11 +14,11 @@ function HomeScreen() {
     const {userInfo} = userLogin
     const [updatePosts, setUpdatePosts] = useState(false)
 
-    useEffect(() => {
-        if(!userInfo){
-            navigate('/')
-        }
-    },[navigate, userInfo])
+    // useEffect(() => {
+    //     if(!userInfo){
+    //         navigate('/')
+    //     }
+    // },[navigate, userInfo])
 
     return(
         <div className='home'>

@@ -10,8 +10,8 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 
 const ChatMessage = () => {
-    // const {id, token} = useSelector(state=>state.userLogin?.userInfo)
-    const {id=null, token=null} = useSelector(state=>state?.userLogin?.userInfo||{})
+    const {id, token} = useSelector(state=>state.userLogin?.userInfo)
+    // const {id=null, token=null} = useSelector(state=>state?.userLogin?.userInfo||{})
     const endRef = useRef(null)
     const [userIsOnline, setUserIsOnline] = useState(false)
     const {chatroomId, user, fetchChatlist} = useContext(ChatContext)

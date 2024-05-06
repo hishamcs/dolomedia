@@ -9,8 +9,8 @@ import ChatContext from '../../../../context/ChatContext';
 
 const ChatList = () => {
 
-    // const {id} = useSelector(state=>state.userLogin.userInfo)
-    const {id=null, token=null} = useSelector(state=>state?.userLogin?.userInfo||{})
+    const {id} = useSelector(state=>state.userLogin.userInfo)
+    // const {id=null, token=null} = useSelector(state=>state?.userLogin?.userInfo||{})
     const {chats, fetchChatlist, searchInput, setChatroomId, setUser} = useContext(ChatContext)
 
     const handleSelect = (chat) => {
