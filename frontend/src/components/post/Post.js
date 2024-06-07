@@ -10,6 +10,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import LikeComponent from '../like/LikeComponent';
 import Share from '../share/Share';
+import axiosInstance from '../../axios';
 
 const Post = ({post, setPosts, setUpdatePosts}) => {
     // console.log('post : ',post)
@@ -30,7 +31,7 @@ const Post = ({post, setPosts, setUpdatePosts}) => {
     //     })
     // }
     const likePostHandler = () => {
-        axios.get(`/posts/like-post/${userId}/${post.id}`).then(function (response) {
+        axiosInstance.get(`/posts/like-post/${userId}/${post.id}`).then(function (response) {
             const post_action = response.data.postliked
             setPostLike(post_action)
             setLikeCount(response.data.likeCount)
@@ -39,7 +40,7 @@ const Post = ({post, setPosts, setUpdatePosts}) => {
     }
 
     useEffect(()=> {
-        axios({
+        axiosInstance({
             method:'post',
             url:`/posts/like-post/`,
             data:{

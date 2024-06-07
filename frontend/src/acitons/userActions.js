@@ -1,3 +1,4 @@
+import axiosInstance from '../axios';
 import {
     USER_LOGIN_FAIL,
     USER_LOGIN_SUCCESS,
@@ -29,6 +30,8 @@ import axios from 'axios';
 
 
 
+
+
 export const login = (email, password) => async (dispatch) => {
     try {
         dispatch({
@@ -41,12 +44,16 @@ export const login = (email, password) => async (dispatch) => {
             }
         }
 
-        const { data } = await axios.post(
-            '/api/users/login/',
-            { 'username': email, 'password': password },
-            config
-        )
+        // const { data } = await axios.post(
+        //     '/api/users/login/',
+        //     { 'username': email, 'password': password },
+        //     config
+        // )
         // console.log('data : ', data)
+
+        const {data} = await axiosInstance.post('user/login/', { 'username': email, 'password': password })
+        console.log('data : ', data)
+
         dispatch({
             type: USER_LOGIN_SUCCESS,
             payload: data
@@ -182,14 +189,16 @@ export const fetchPicture = (userId) => async(dispatch, getState) => {
 
         const {userLogin:{userInfo}} = getState()
 
-        const config = {
-            headers: {
-                'Content-type':'application/json',
-                Authorization:`Bearer ${userInfo.token}`
-            }
-        }
+        // const config = {
+        //     headers: {
+        //         'Content-type':'application/json',
+        //         Authorization:`Bearer ${userInfo.token}`
+        //     }
+        // }
         
-        const {data} = await axios.post(`/api/user/profile/fetch-user-pics/`, {'userId': userId}, config)
+        // const {data} = await axios.post(`/api/user/profile/fetch-user-pics/`, {'userId': userId}, config)
+        
+        const {data} = await axiosInstance.post(`user/profile/fetch-user-pics/`, {'userId': userId})
         dispatch({
             type:USER_FETCHPIC_SUCCESS,
             payload:data

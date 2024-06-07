@@ -138,7 +138,7 @@ env.bak/
 venv.bak/
 
 #current venv
-newv 
+newv/
 
 # Spyder project settings
 .spyderproject

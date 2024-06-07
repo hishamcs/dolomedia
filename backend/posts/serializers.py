@@ -20,10 +20,15 @@ class PostSerializer(serializers.ModelSerializer):
     def get_comment_count(self, obj):
         comment_count = obj.comment_post.all().count()
         return comment_count
-    # def save(self,**kwargs):
-    #     print('validated data : ', self.validated_data)
-    #     instance = super().save(**kwargs)
-    #     return instance
+    
+    def validate(self, data):
+        content = data.get('content')
+        image = data.get('image')
+        video = data.get('video')
+        print(f'content : {content} image : {image} video : {video}')
+        if not content and not image and not video:
+            raise serializers.ValidationError("Post can't be null")
+        return data
         
 
 

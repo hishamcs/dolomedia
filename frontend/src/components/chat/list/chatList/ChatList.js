@@ -10,8 +10,7 @@ import ChatContext from '../../../../context/ChatContext';
 const ChatList = () => {
 
     const {id} = useSelector(state=>state.userLogin.userInfo)
-    // const {id=null, token=null} = useSelector(state=>state?.userLogin?.userInfo||{})
-    const {chats, fetchChatlist, searchInput, setChatroomId, setUser} = useContext(ChatContext)
+    const {chats, fetchChatlist, searchInput, setChatroomId, setUser, user} = useContext(ChatContext)
 
     const handleSelect = (chat) => {
         chat.user1.id === id
@@ -43,7 +42,9 @@ const ChatList = () => {
                                 : chat.user1.pro_pic
                             } 
                         alt=''
+                        className='user-chat-avatar'
                     />
+                    
                     <div className='texts'>
                         <span>
                             {chat.user1.id === id 
@@ -53,6 +54,11 @@ const ChatList = () => {
                         </span>
                         <p>{chat.last_message}</p> 
                     </div>
+                    {chat.user1.id === id
+                                ? (chat.user2.is_online && <div className='user-status-indicator'></div> )
+                                : (chat.user1.is_online && <div className='user-status-indicator'></div>)
+                    }
+                    
                 </div>
             ))}
         </div>

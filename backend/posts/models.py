@@ -6,7 +6,7 @@ from django.conf import settings
 
 class Posts(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    content = models.TextField(blank=True)
+    content = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='posts/', null=True, blank=True)
     video = models.FileField(upload_to='posts/video', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

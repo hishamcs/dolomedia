@@ -7,6 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VideoCallOutlinedIcon from '@mui/icons-material/VideoCallOutlined';
 import Button from '@mui/joy/Button';
 import toast, { Toaster } from "react-hot-toast";
+import axiosInstance from "../../axios";
 
 
 
@@ -40,14 +41,14 @@ const Share = ({userInfo,onUpdatePosts, userPicture, post, setEditPost}) => {
       imagePreview ? formData.append('video', ''):formData.append('image', '')
       videoPreview ? formData.append('image', ''):formData.append('video', '')
     }
-    const config = {
-      headers: {
-          'Content-type': 'multipart/form-data',
-          Authorization: `Bearer ${userInfo.token}`
-      }
-    }
+    // const config = {
+    //   headers: {
+    //       'Content-type': 'multipart/form-data',
+    //       Authorization: `Bearer ${userInfo.token}`
+    //   }
+    // }
     try {
-      const response = await axios.patch('/posts/update-posts/',formData, config )
+      const response = await axiosInstance.patch('/posts/update-posts/',formData)
       console.log('response : ', response.data)
       if (response.message==='success'|| response.status===200){
         console.log('updateposts: ', onUpdatePosts)
@@ -91,6 +92,7 @@ const Share = ({userInfo,onUpdatePosts, userPicture, post, setEditPost}) => {
   }
   const handlePost = async() => {
     
+    console.log('file : ', file)
     if(content.trim() !== '' || file!==''){
       const formData = new FormData()
       formData.append('userId', userId)
@@ -103,17 +105,16 @@ const Share = ({userInfo,onUpdatePosts, userPicture, post, setEditPost}) => {
         formData.append('video', file)
         
       }
-      const config = {
-        headers: {
-            'Content-type': 'multipart/form-data',
-            Authorization: `Bearer ${userInfo.token}`
-        }
-      }
+      // const config = {
+      //   headers: {
+      //       'Content-type': 'multipart/form-data',
+      //       Authorization: `Bearer ${userInfo.token}`
+      //   }
+      // }
     
-      const response = await axios.post(
+      const response = await axiosInstance.post(
       `/posts/addposts/`,
-      formData,
-      config
+      formData
       )
 
       console.log(response.data)
@@ -138,7 +139,7 @@ const Share = ({userInfo,onUpdatePosts, userPicture, post, setEditPost}) => {
       <div className="containerr">
         <div className="top">
           
-          {proPicSrc && <img src={proPicSrc} alt=""/>}
+          {proPicSrc && <img src={`http://127.0.0.1:8000`+proPicSrc} alt=""/>}
           <TextareaAutosize placeholder={`What's on your mind "${name}?`} value={content} onChange={(e) => setContent(e.target.value)} style={{width:'100%'}}/>
           
         </div>

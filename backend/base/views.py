@@ -14,17 +14,15 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.db.models import F
 
-# Create your views here.
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        username = attrs.get(self.username_field)
-        password = attrs.get("password")
         data = super().validate(attrs)
-        serializer = UserSerializerWithToken(self.user).data
+        serializer = UserSerializer(self.user).data
         for k, v in serializer.items():
             data[k] = v
 
         return data
+
 
 @api_view(['GET'])  
 @permission_classes([IsAuthenticated])
@@ -41,26 +39,42 @@ def getUsers(request):
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data)
     
-@api_view(['POST'])
-def registerUser(request):
-    data = request.data
-
+# @api_view(['POST'])
+# def registerUser(request):
+#     data = request.data
+#     print(data)
     
-    try:
-        user = User.objects.create(
-            first_name = data['name'],
-            username = data['email'],
-            email= data['email'],
-            password = make_password(data['password']),
-            phone = data['phoneNumber']
-        )
+#     try:
+#         user = User.objects.create(
+#             first_name = data['name'],
+#             username = data['email'],
+#             email= data['email'],
+#             password = make_password(data['password']),
+#             phone = data['phoneNumber']
+#         )
+#         OpenedNotification.objects.create(user=user)
+#         UserOnlineStatus.objects.create(user=user)
+#         serializer = UserSerializer(user)
+#         return Response(serializer.data)
+#     except Exception as e:
+#         print(e)
+#         return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+    # except:
+    #     message = {'detail':'User with this email already exists'}
+    #     return Response(message, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['POST'])    
+def registerUser(request):
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
         OpenedNotification.objects.create(user=user)
         UserOnlineStatus.objects.create(user=user)
-        serializer = UserSerializerWithToken(user)
-        return Response(serializer.data)
-    except:
-        message = {'detail':'User with this email already exists'}
-        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        print('not valid')
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(['GET'])
 @permission_classes([IsAdminUser])    

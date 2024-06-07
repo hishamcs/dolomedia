@@ -12,6 +12,7 @@ import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNone
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import Notification from '../notification/Notification';
 import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
+import axiosInstance from '../../axios';
 
 
 
@@ -33,10 +34,15 @@ function NavBar() {
   const handleSearch = () => {
     if(searchContent!==''){
       setDetail(true)
-    axios.get('/api/user-search/', {params:{user:searchContent, userId:userId}}).then(response=> {
-      console.log(response.data)
-      setUserLists(response.data)
-    })
+
+      axiosInstance.get('user-search/', {params:{user:searchContent, userId:userId}}).then(response=> {
+        console.log(response.data)
+        setUserLists(response.data)
+      })
+    // axios.get('/api/user-search/', {params:{user:searchContent, userId:userId}}).then(response=> {
+    //   console.log(response.data)
+    //   setUserLists(response.data)
+    // })
   }
   }
   
@@ -68,11 +74,18 @@ function NavBar() {
 
   const handleFetchNotifications = () => {
     console.log('notifications')
-    axios.get('/posts/notifications/', {params:{userId:userId}}).then(response => {
+
+    axiosInstance.get('/posts/notifications/', {params:{userId:userId}}).then(response => {
       console.log(response.data.notifications)
       setNotificationList(response.data.notifications)
       setNotifications(!notifications)
     })
+
+    // axios.get('/posts/notifications/', {params:{userId:userId}}).then(response => {
+    //   console.log(response.data.notifications)
+    //   setNotificationList(response.data.notifications)
+    //   setNotifications(!notifications)
+    // })
   }
 
   
@@ -111,7 +124,7 @@ function NavBar() {
                 <Link to={`/home/profile/${userId}`} style={{textDecoration:'none'}}>
                 <div className='userDet'>
                   {/* <img alt='userimage'src='https://images.pexels.com/photos/3228727/pexels-photo-3228727.jpeg?auto=compress&cs=tinysrgb&w=1600'/> */}
-                  <img alt='userimage'src={proPic}/>
+                  <img alt='userimage'src={`http://127.0.0.1:8000`+proPic}/>
                   <span>{userInfo?.name}</span>
                 </div>
                 </Link>

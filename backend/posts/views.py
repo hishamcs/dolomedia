@@ -11,14 +11,17 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
 from rest_framework import status
+from rest_framework.settings import api_settings
 import os
+from rest_framework.pagination import PageNumberPagination
+
 
 # Create your views here.
 
 class PostsView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = PostSerializer
-
+    pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
     def post(self, request):
         user_id = request.data.get('userId')
         if not user_id:
@@ -28,15 +31,31 @@ class PostsView(APIView):
         content = request.data.get('content')
         image = request.data.get('image')
         video = request.data.get('video')
+        print('content : ', request.data)
         if serializer.is_valid():
             serializer.save(user=user, image=image, content=content, video=video)
             return Response({'message':'success'}, status=status.HTTP_201_CREATED)
         else:
             print(serializer.errors)
             return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+    # def get(self, request):
+    #     user_id = request.GET.get('userId')
+    #     if user_id is None:
+    #         return Response({'error':'User id is required'}, status=status.HTTP_400_BAD_REQUEST)
+    #     try:
+    #         user = get_object_or_404(User, id=user_id)
+    #         user_following = list(user.following.all().values_list('following_id',flat=True))
+    #         user_following.append(user.id)
+    #         posts = Posts.objects.filter(user__in=user_following)
+    #         serializer = self.serializer_class(posts, many=True)
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     except Exception as e:
+    #         print('exception  :', e)
+    #         return Response({'error':str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+
     def get(self, request):
-        print('request .data : ', request.data)
         user_id = request.GET.get('userId')
         if user_id is None:
             return Response({'error':'User id is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -45,6 +64,10 @@ class PostsView(APIView):
             user_following = list(user.following.all().values_list('following_id',flat=True))
             user_following.append(user.id)
             posts = Posts.objects.filter(user__in=user_following)
+            page = self.paginate_queryset(posts)
+            if page is not None:
+                serializer = self.serializer_class(page, many=True)
+                return self.get_paginated_response(serializer.data)
             serializer = self.serializer_class(posts, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -99,7 +122,41 @@ class PostsView(APIView):
         # post.report_count += 1
         # post.save()
 
+
+    @property
+    def paginator(self):
+        """
+        The paginator instance associated with the view, or `None`.
+        """
+        if not hasattr(self, '_paginator'):
+            if self.pagination_class is None:
+                self._paginator = None
+            else:
+                self._paginator = self.pagination_class()
+        return self._paginator
+    
+
+    def paginate_queryset(self, queryset):
+        """
+        Return a single page of results, or `None` if pagination is disabled.
+        """
+        # print(queryset)
+        if self.paginator is None:
+            return None
+        return self.paginator.paginate_queryset(queryset, self.request, view=self)
+    
+
+    def get_paginated_response(self, data):
+        """
+        Return a paginated style `Response` object for the given output data.
+        """
+        assert self.paginator is not None
+        return self.paginator.get_paginated_response(data)
+
+
+
 class UserSuggestions(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self,request,user_id):
         user = User.objects.get(id=user_id)
         users = User.objects.filter(is_superuser=False).exclude(id=user_id)
@@ -365,3 +422,12 @@ class CommentLikeView(APIView):
         comment.save()
             
         return Response(response)       
+    
+
+
+
+
+
+
+
+

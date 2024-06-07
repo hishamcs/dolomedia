@@ -3,6 +3,7 @@ import './rightBar.scss'
 import axios from 'axios'
 import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
+import axiosInstance from '../../axios'
 
 function RightBar() {
 
@@ -28,13 +29,12 @@ function RightBar() {
       navigate('/')
     } else {
     const fetchData = async() => {
-      const config = {
-        headers:{
-            'Content-type':'application/json',
-        }
-      }
-  
-      const response = await axios?.get(`/posts/usersuggestion/${userId}`, config)
+      // const config = {
+      //   headers:{
+      //       'Content-type':'application/json',
+      //   }
+      // }
+      const response = await axiosInstance.get(`/posts/usersuggestion/${userId}`)
       setUserList(response.data)
     }
 

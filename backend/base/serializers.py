@@ -1,21 +1,56 @@
 from .models import User, ChatRoom, Message, UserOnlineStatus
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_extra_fields.fields import Base64ImageField 
 import base64
 from posts.utils import format_time
 from django.shortcuts import get_object_or_404
-
+from django.core.validators import RegexValidator,MinLengthValidator, MaxLengthValidator
+from django.contrib.auth.hashers import make_password
 
 
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(read_only=True)
     isAdmin = serializers.SerializerMethodField(read_only=True)
     is_online = serializers.SerializerMethodField(read_only=True)
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$',
+                message='Password should be 8-20 characters and include at least 1 letter, 1 number, and 1 special character'
+            )
+        ]
+    )
+    first_name = serializers.CharField(
+        required=True,
+        validators=[
+            MinLengthValidator(3, message='User name should be at least 3 characters.'),
+            MaxLengthValidator(16, message='User name should be at most 16 characters.'),
+            RegexValidator(
+                regex=r'^[a-zA-Z]+$',
+                message='User name should only contain alphanumeric characters'
+            )
+        ]
+    )
+
+    phone = serializers.CharField(
+        required=True,
+        write_only=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{10}$',
+                message='Please Enter a valid Mobile Number'
+            )
+        ]
+    )
     
     class Meta:
         model = User
-        fields = ['id','email', 'name','is_active','isAdmin','pro_pic', 'cover_pic', 'is_online']
+        fields = ['id','email', 'name','is_active','isAdmin','pro_pic', 'cover_pic', 'is_online', 'password', 'first_name', 'phone']
 
     
     def get_name(self, obj):
@@ -31,16 +66,30 @@ class UserSerializer(serializers.ModelSerializer):
         status = get_object_or_404(UserOnlineStatus, user=obj)
         return status.is_online
     
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise ValidationError('The email already used')
+        return value
+    
+    def validate_phone(self, value):
+        if User.objects.filter(phone=value).exists():
+            raise ValidationError('The Phone already used')
+        return value
+    
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+    
 
-class UserSerializerWithToken(UserSerializer):
-    token = serializers.SerializerMethodField(read_only=True)
-    class Meta:
-        model = User
-        fields = ['id','email', 'name','token','isAdmin', 'pro_pic', 'cover_pic']
+# class UserSerializerWithToken(UserSerializer):
+#     token = serializers.SerializerMethodField(read_only=True)
+#     class Meta:
+#         model = User
+#         fields = ['id','email', 'name','token','isAdmin', 'pro_pic', 'cover_pic']
 
-    def get_token(self, obj):
-        token = RefreshToken.for_user(obj)
-        return str(token.access_token)
+#     def get_token(self, obj):
+#         token = RefreshToken.for_user(obj)
+#         return str(token.access_token)
 
 class UserPictureSerailzer(serializers.ModelSerializer):
 
@@ -61,7 +110,7 @@ class ChatroomSerializer(serializers.ModelSerializer):
     def get_last_message(self, obj):
         last_message = obj.messages.order_by('-id').first()
         if last_message:
-            return last_message.message
+            return last_message.message if len(last_message.message)<15 else last_message.message[:15]
         return None
         
     def get_last_msg_read(self, obj):
