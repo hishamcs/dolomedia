@@ -1,18 +1,22 @@
 import FormInput from '../../../components/formInput/FormInput'
 import './login.scss'
-import { useState } from 'react';
-import { useDispatch } from 'react-redux'
+import { useContext, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux'
 import toast from "react-hot-toast";
 import { Link, useNavigate } from 'react-router-dom';
 import GoogleButton from 'react-google-button'
-import { login } from '../../../acitons/userActions'
+import { login, logout } from '../../../acitons/userActions'
+import LoaderContext from '../../../context/LoaderContext';
 
 
 
 const Login = () => {
 
+    const {setLoading} = useContext(LoaderContext)
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const userLogin = useSelector(state => state.userLogin)
+    const { error, loading, userInfo } = userLogin
 
     const [values, setValues] = useState({
         email: "",
@@ -26,14 +30,21 @@ const Login = () => {
 
     const handleSubmit = async(e) => {
         e.preventDefault()
-        if(values.password.trim() ==='') {
-            toast.error('Please enter valid password')
-            return
+        try {
+            setLoading(true)
+            if(values.password.trim() ==='') {
+                toast.error('Please enter valid password')
+                setLoading(false)
+                return
+            }
+
+            await dispatch(login(values.email, values.password))
+            navigate('/home')
+        }catch(error) {
+            toast.error('Failed to login.please try again')
+        } finally {
+            setLoading(false)
         }
-
-        await dispatch(login(values.email, values.password))
-        navigate('/home')
-
     }
 
     const inputs = [
@@ -54,17 +65,26 @@ const Login = () => {
             }
     ]
 
+    useEffect(()=> {
+        if(error) {
+            toast.error(error)
+            setLoading(false)
+            dispatch(logout())
+        }
+    }, [])
+
     return (
         <div className="login">
             <div className='container'>
-                <h1>LOGIN</h1>
+                <h1>DOLOMEDIA</h1>
                 <form onSubmit={handleSubmit}>
                     {inputs.map(input=> (
                         <FormInput {...input} key={input.id} value={values[input.name]} onChange={onChange} />
                     ))}
                     <div style={{display:"flex", gap:"10px", justifyContent:"space-between", width:"100%"}}>
-                        <a href='/'> Login with OTP</a>
-                        <a href='/'> Forgot Password ?</a>
+                        {/* <a href='/'> Login with OTP</a> */}
+                        <Link to='/otp-login'>Login with OTP</Link>
+                        <Link to='/forgot-password'> Forgot Password ?</Link>
                     </div>
                     <button>Login</button>
                 </form>

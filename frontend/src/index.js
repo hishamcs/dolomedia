@@ -5,12 +5,15 @@ import store from './store'
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-// import './bootstrap.min.css'
+import { LoaderProvider } from './context/LoaderContext';
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
-    <App />
+    <LoaderProvider>
+      <App />
+    </LoaderProvider>
   </Provider>
 );
 

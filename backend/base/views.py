@@ -64,6 +64,7 @@ def getUsers(request):
     #     return Response(message, status=status.HTTP_400_BAD_REQUEST)
 @api_view(['POST'])    
 def registerUser(request):
+    print('request.data : ', request.data)
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()

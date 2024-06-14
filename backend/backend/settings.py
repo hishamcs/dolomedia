@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -211,10 +211,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
 
 
-AWS_ACCESS_KEY_ID = 'AKIA3MDYBU2M4UTYNL75'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
-AWS_STORAGE_BUCKET_NAME = 'dolomedia-2024'
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 AWS_S3_FILES_OVERWRITE = False
 

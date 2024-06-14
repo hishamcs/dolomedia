@@ -1,6 +1,4 @@
 import UserListScreen from './screens/UserListScreen';
-import RegisterScreen from './screens/RegisterScreen';
-import LoginScreen from './screens/LoginScreen';
 import Login from './screens/user/login/Login';
 import Register from './screens/user/register/Register';
 import HomeScreen from './screens/HomeScreen';
@@ -21,9 +19,15 @@ import ChatScreen from './screens/ChatScreen';
 import { Toaster } from 'react-hot-toast';
 import { ChatProvider } from './context/ChatContext';
 import SinglePostScreen from './screens/SinglePostScreen';
+import OtpLogin from './screens/user/otpLogin/OtpLogin';
+import ForgotPassword from './screens/user/forgotpassword/ForgotPassword';
+import { Backdrop, CircularProgress } from '@mui/material';
+import { useContext } from 'react';
+import LoaderContext from './context/LoaderContext';
 
 function App() {
   const { userInfo } = useSelector((state) => state?.userLogin);
+  const { loading } = useContext(LoaderContext)
   // console.log('userInfo : ', userInfo)
   const Layout = () => {
     return (
@@ -41,7 +45,7 @@ function App() {
   };
 
   const ProtectedRoute = ({ children }) => {
-    console.log('userInfo : ', userInfo);
+    // console.log('userInfo : ', userInfo);
     if (!userInfo) {
       return <Navigate to='/' />;
     }
@@ -58,6 +62,8 @@ function App() {
             <Route path='profile/:id' element={<Profile />} />
           </Route>
           <Route path='/register' element={<Register />} />
+          <Route path='/otp-login' element={<OtpLogin />} />
+          <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/ad-home' element={<UserListScreen />} />
           <Route path='/ad-home/posts' element={<PostListScreen />} />
           <Route path='/posts/:id' element={<SinglePostScreen />} />
@@ -65,6 +71,13 @@ function App() {
         </Routes>
       </Router>
       <Toaster position='top-center' reverseOrder={false} />
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+        
+      >
+        <CircularProgress color="inherit" size={60}/>
+      </Backdrop>
     </>
   );
 }

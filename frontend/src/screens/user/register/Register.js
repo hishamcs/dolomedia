@@ -1,11 +1,18 @@
 import './register.scss'
 import FormInput from '../../../components/formInput/FormInput'
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import GoogleButton from 'react-google-button';
+import axiosInstance from '../../../axios';
+import toast from "react-hot-toast";
+import LoaderContext from '../../../context/LoaderContext';
+import { useNavigate } from 'react-router-dom';
+
+
 
 const Register = () => {
-
+    const navigate = useNavigate()
+    const {setLoading} = useContext(LoaderContext)
     const [values, setValues] = useState({
         name:"",
         email:"",
@@ -65,14 +72,28 @@ const Register = () => {
     const onChange = (e) => {
         setValues({...values,[e.target.name]: e.target.value})
     }
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault()
+        setLoading(true)
+        try{
+            const {data} = await axiosInstance.post('user/register/', { 'first_name': values.name, 'email': values.email, 'password': values.password, 'phone': values.phoneNumber })
+            console.log('data : ', data)
+            toast.success('Account created successfully...')
+            navigate('/')
+        } catch(error) {
+            if(error.response.data) {
+                Object.values(error.response.data).forEach(value=> {
+                    toast.error(value)
+                })
+            }
+        } finally {
+            setLoading(false)
+        }
     }
-    console.log(values)
     return (
         <div className="register">
             <div className='container'>
-                <h1>CREATE ACCOUNT</h1>
+                <h1>DOLOMEDIA</h1>
                 <form onSubmit={handleSubmit}>
                     {inputs.map(input=> (
                         <FormInput {...input} key={input.id} value={values[input.name]} onChange={onChange}/>

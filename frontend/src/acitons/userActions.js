@@ -1,3 +1,4 @@
+
 import axiosInstance from '../axios';
 import {
     USER_LOGIN_FAIL,
@@ -32,7 +33,9 @@ import axios from 'axios';
 
 
 
+
 export const login = (email, password) => async (dispatch) => {
+
     try {
         dispatch({
             type: USER_LOGIN_REQUEST
@@ -79,19 +82,21 @@ export const register = (name, email, password, phoneNumber) => async (dispatch)
                 type: USER_REGISTER_REQUEST
             })
 
-            const config = {
-                headers: {
-                    'Content-type': 'application/json'
-                }
-            }
+            // const config = {
+            //     headers: {
+            //         'Content-type': 'application/json'
+            //     }
+            // }
 
-            const { data } = await axios.post(
-                '/api/users/register/',
-                { 'name': name, 'email': email, 'password': password, 'phoneNumber': phoneNumber },
-                config
-            )
-            console.log('reg data : ', data)
+            // const { data } = await axios.post(
+            //     '/api/users/register/',
+            //     { 'name': name, 'email': email, 'password': password, 'phoneNumber': phoneNumber },
+            //     config
+            // )
+            // console.log('reg data : ', data)
 
+            const {data} = await axiosInstance.post('user/register/', { 'first_name': name, 'email': email, 'password': password, 'phone': phoneNumber })
+            console.log('data from register : ', data)
             dispatch({
                 type: USER_REGISTER_SUCCESS,
                 payload: data
