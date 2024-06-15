@@ -7,3 +7,5 @@ class BaseConfig(AppConfig):
 
     def ready(self):
         import base.signals
+        from . import firebase_admin
+        firebase_admin.initialize_firebase()

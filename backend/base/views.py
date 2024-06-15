@@ -13,6 +13,9 @@ from django.db.models import Q
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.db.models import F
+import firebase_admin
+from firebase_admin import auth as firebase_auth
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -223,5 +226,33 @@ def getChatroomMsg(request):
         return Response({'detail':'Invalid room id'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({'detail':str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+def google_auth(request):
+    token = request.data.get('token')
+    
+    try:
+        decoded_token = firebase_auth.verify_id_token(token)
+        name = decoded_token.get('name').split()[0]
+        email = decoded_token.get('email')
+
+        user, created = User.objects.get_or_create(
+            first_name=name,
+            username=email,
+            email=email
+        )
+        if created:
+            OpenedNotification.objects.create(user=user)
+            UserOnlineStatus.objects.create(user=user)
+
+        # create tokens
+        refresh = RefreshToken.for_user(user)
+        user_info = UserSerializer(user).data
+        user_info['refresh'] = str(refresh)
+        user_info['access'] = str(refresh.access_token)
+        return Response(user_info, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
     
     

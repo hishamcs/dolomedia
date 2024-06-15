@@ -22,7 +22,6 @@ import {
     USER_FETCHPIC_SUCCESS,
 
 
-
 } from '../constants/userConstants'
 
 import axios from 'axios';
@@ -74,7 +73,30 @@ export const login = (email, password) => async (dispatch) => {
     }
 }
 
+export const googleLogin = (token) => async (dispatch) => {
+    try {
+        dispatch({
+            type: USER_LOGIN_REQUEST
+        })
 
+        const {data} = await axiosInstance.post('user/google-auth/', {token})
+        console.log('google res data : ', data)
+
+        dispatch({
+            type: USER_LOGIN_SUCCESS,
+            payload: data
+        })
+
+        localStorage.setItem('userInfo', JSON.stringify(data))
+    } catch(error) {
+        dispatch({
+            type: USER_LOGIN_FAIL,
+            payload: error.response && error.response.data.error
+                ? error.response.data.error
+                : error.message
+        })
+    }
+}
 
 export const register = (name, email, password, phoneNumber) => async (dispatch) => {
     try {

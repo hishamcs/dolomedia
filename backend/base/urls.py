@@ -10,6 +10,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     # path('user/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('user/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('user/google-auth/', views.google_auth, name='google_auth'),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('user/profile/', views.getUserProfile, name='userprofile'),
     path('users/', views.getUsers, name='users'),

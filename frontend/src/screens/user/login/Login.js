@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import GoogleButton from 'react-google-button'
 import { login, logout } from '../../../acitons/userActions'
 import LoaderContext from '../../../context/LoaderContext';
+import GoogleSignin from '../../../components/googleSignin/GoogleSignin';
 
 
 
@@ -89,7 +90,7 @@ const Login = () => {
                     <button>Login</button>
                 </form>
                 <p>Don't have account ? <Link to='/register'>Register</Link></p>
-                <GoogleButton type='dark' />
+                <GoogleSignin />
             </div>
         </div>
     )

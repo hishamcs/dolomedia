@@ -77,6 +77,12 @@
                     border-radius: 50%;
                     object-fit: cover;
                 }
+
+                .userDet {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
             }
         }
     }

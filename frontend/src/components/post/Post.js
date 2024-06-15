@@ -110,7 +110,7 @@ const Post = ({post, setPosts, setUpdatePosts}) => {
             
                             </div>
                         )
-                     :<Share post={post} setEditPost={setEditPost} userInfo={userInfo} onUpdatePosts={()=>setUpdatePosts(true)}/>
+                     :<Share post={post} setEditPost={setEditPost} userInfo={userInfo} onUpdatePosts={()=>setUpdatePosts(true)} editPost={editPost}/>
         }
         
         

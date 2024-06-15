@@ -3,10 +3,17 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
 
+def user_directory_path(instance, filename):
+    return f'user_{instance.id}/{filename}'
 class User(AbstractUser):
-    phone = models.CharField(max_length=10, unique=True)
-    pro_pic = models.ImageField(blank=True, null=True, default='default/pro_pic.png')
-    cover_pic = models.ImageField(blank=True, null=True, default='default/cover_pic.png')
+    phone = models.CharField(max_length=10, unique=True, null=True)
+    pro_pic = models.ImageField(
+        upload_to=user_directory_path,
+        blank=True, null=True, default='images/pro_pic.png'
+    )
+    cover_pic = models.ImageField(
+        upload_to=user_directory_path,
+        blank=True, null=True, default='images/cover_pic.png')
 
 class ChatRoom(models.Model):
     user1 = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='user1',null=True)

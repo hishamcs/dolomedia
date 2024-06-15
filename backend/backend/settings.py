@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8n7-!h%qbwq07qp$js06ep0^6fq!1yb3wxtz_8@py4b#&*!x1k'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -219,6 +219,7 @@ AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 AWS_S3_FILES_OVERWRITE = False
 
 
+
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3StaticStorage"
@@ -228,3 +229,4 @@ STORAGES = {
         "BACKEND": "storages.backends.s3boto3.S3StaticStorage"
     }
 }
+

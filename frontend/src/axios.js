@@ -27,6 +27,22 @@ axiosInstance.interceptors.request.use(
             console.log('token is deleted')
             delete config.headers.Authorization
         }
+
+        // Determine the content-type
+        if(config.data) {
+            if(typeof config.data === 'object' && !(config.data instanceof FormData)) {
+                console.log('content type is : application/json')
+                config.headers['Content-Type'] = 'application/json'
+            } else if (config.data instanceof FormData) {
+                console.log('content type is : multipart form data')
+                config.headers['Content-Type'] = 'multipart/form-data'
+            } else {
+                console.log('content type is : text plain')
+                config.headers['Content-Type'] = 'text/plain'
+            }
+        }
+
+
         return config
     }, 
     (error) => {

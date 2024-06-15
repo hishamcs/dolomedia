@@ -23,12 +23,14 @@ function NavBar() {
   const userLogin = useSelector(state=>state.userLogin)
   const userPicture = useSelector(state=>state.userPicture)
   const userPic = userPicture.userPicture
-  const proPic = userPic?.pro_pic
+  // const proPic = userPic?.pro_pic
+  
   // const [socket, setSocket] = useState(null)
   const [userLists, setUserLists] = useState([])
   const [detail, setDetail] = useState(false)
   const {userInfo} = userLogin
   const userId = userInfo?.id
+  const proPic = userInfo?.pro_pic
   const dispatch = useDispatch()
   const [searchContent, setSearchContent] = useState('')
   const handleSearch = () => {
@@ -50,7 +52,7 @@ function NavBar() {
 
   useEffect(()=> {
     if(userId) {
-      dispatch(fetchPicture(userId))
+      // dispatch(fetchPicture(userId))
       const skt = new WebSocket(`ws://127.0.0.1:8000/ws/notification/${userId}/`)
       
       skt.onopen= function(e) {
@@ -124,7 +126,7 @@ function NavBar() {
                 <Link to={`/home/profile/${userId}`} style={{textDecoration:'none'}}>
                 <div className='userDet'>
                   {/* <img alt='userimage'src='https://images.pexels.com/photos/3228727/pexels-photo-3228727.jpeg?auto=compress&cs=tinysrgb&w=1600'/> */}
-                  <img alt='userimage'src={`http://127.0.0.1:8000`+proPic}/>
+                  <img alt='userimage'src={proPic}/>
                   <span>{userInfo?.name}</span>
                 </div>
                 </Link>

@@ -46,6 +46,10 @@ MANIFEST
 *.manifest
 *.spec
 
+# firebase service account
+config
+
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -138,7 +142,7 @@ env.bak/
 venv.bak/
 
 #current venv
-newv/
+newv
 
 # Spyder project settings
 .spyderproject

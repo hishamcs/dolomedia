@@ -7,6 +7,7 @@ import axiosInstance from '../../../axios';
 import toast from "react-hot-toast";
 import LoaderContext from '../../../context/LoaderContext';
 import { useNavigate } from 'react-router-dom';
+import GoogleSignin from '../../../components/googleSignin/GoogleSignin';
 
 
 
@@ -46,6 +47,7 @@ const Register = () => {
             type: 'text',
             errorMessage: 'Enter a valid phone number',
             placeholder: 'Phone Number',
+            pattern: `^\\d{10}$`,
             required: true,
         },
         {
@@ -101,7 +103,7 @@ const Register = () => {
                     <button>Register</button>
                 </form>
                 <Link to='/'>Already have an account</Link>
-                <GoogleButton type='dark' label='Signup with google'/>
+                <GoogleSignin />
             </div>
         </div>
     )
