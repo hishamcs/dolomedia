@@ -8,6 +8,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import ChatContext from '../../../context/ChatContext';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import axiosInstance from '../../../axios';
 
 const ChatMessage = () => {
     const {id, token} = useSelector(state=>state.userLogin?.userInfo)
@@ -48,12 +49,9 @@ const ChatMessage = () => {
             params:{
                 "chatroomId":chatroomId
             },
-            headers:{
-                Authorization: `Bearer ${token}`
-            }
         }
         try {
-            const response = await axios.get('/api/chatroom/messages/', config)
+            const response = await axiosInstance.get('chatroom/messages/', config)
             if (response.status ===200) {
                 setChatMessages(response.data)
                 setTextMsg('')
@@ -173,12 +171,12 @@ const ChatMessage = () => {
             </div>
             <div className='bottom'>
                 <div className='icons'>
-                    <label htmlFor='file'>
+                    {/* <label htmlFor='file'>
                         <ImageIcon />
                     </label>
                     <input type='file' id='file' style={{display:'none'}} onChange={handleImg}/>
                     <CameraAltIcon />
-                    <MicIcon />
+                    <MicIcon /> */}
                 </div>
                 <input 
                     type='text' 

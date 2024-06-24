@@ -20,7 +20,11 @@ import {
     USER_FETCHPIC_FAIL,
     USER_FETCHPIC_REQUEST,
     USER_FETCHPIC_SUCCESS,
+    USER_UPDATE_PROFILE_PIC,
 
+    USER_OTP_LOGIN_REQUEST,
+    USER_OTP_LOGIN_SUCCESS,
+    USER_OTP_LOGIN_FAIL
 
 } from '../constants/userConstants'
 
@@ -240,6 +244,80 @@ export const fetchPicture = (userId) => async(dispatch, getState) => {
         })
     }
 }
+
+export const updateProfilePic = (profilePic) => (dispatch, getState) => {
+    dispatch({
+        type:USER_UPDATE_PROFILE_PIC,
+        payload:profilePic
+    })
+
+    const {
+        userLogin: {userInfo},
+    } = getState();
+
+    const updatedUserInfo = {...userInfo, pro_pic:profilePic}
+    localStorage.setItem('userInfo', JSON.stringify(updatedUserInfo))
+}
+
+
+export const verifyOTP = (email, otp) => async(dispatch) => {
+    try {
+        dispatch({
+            type: USER_LOGIN_REQUEST
+        })
+
+        const {data} = await axiosInstance.post('user/otp-login-verify/', {email, otp})
+        console.log('otp login data : ', data)
+
+        dispatch({
+            type: USER_LOGIN_SUCCESS,
+            payload:data
+        })
+
+        localStorage.setItem('userInfo', JSON.stringify(data))
+
+    }catch(error) {
+        dispatch({
+            type: USER_LOGIN_FAIL,
+            payload: error.response && error.response.data.detail
+                ? error.response.data.detail
+                : error.message,
+        })
+    }
+}
+
+
+
+
+
+
+// export const loginWithOTP = (phoneNum) => async(dispatch) => {
+//     try {
+//         dispatch({
+//             type: USER_LOGIN_REQUEST
+//         })
+
+//         const {data} = await axiosInstance.post('user/otp-login/', {'phone':phoneNum})
+//         console.log('data : ', data)
+
+//         dispatch({
+//             type: USER_LOGIN_SUCCESS,
+//             payload:data
+//         })
+
+//         localStorage.setItem('userInfo', JSON.stringify(data))
+
+//     }catch(error) {
+//         dispatch({
+//             type: USER_LOGIN_FAIL,
+//             payload: error.response && error.response.data.detail
+//                 ? error.response.data.detail
+//                 : error.message,
+//         })
+//     }
+// }
+
+
 
 
 

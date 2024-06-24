@@ -6,14 +6,13 @@ import MoreInfo from '../moreInfo/MoreInfo';
 import { Link } from 'react-router-dom';
 import Comments from '../comments/Comments';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useSelector } from 'react-redux';
 import LikeComponent from '../like/LikeComponent';
 import Share from '../share/Share';
 import axiosInstance from '../../axios';
+import toast from 'react-hot-toast';
 
 const Post = ({post, setPosts, setUpdatePosts}) => {
-    // console.log('post : ',post)
     const userLogin = useSelector(state=>state.userLogin)
     const [postLike, setPostLike] = useState()
     const [likeCount, setLikeCount] = useState()
@@ -30,13 +29,25 @@ const Post = ({post, setPosts, setUpdatePosts}) => {
     //         toast('Report is submitted...')
     //     })
     // }
-    const likePostHandler = () => {
-        axiosInstance.get(`/posts/like-post/${userId}/${post.id}`).then(function (response) {
-            const post_action = response.data.postliked
-            setPostLike(post_action)
-            setLikeCount(response.data.likeCount)
-        })
+    // const likePostHandler = () => {
+    //     axiosInstance.get(`/posts/like-post/${userId}/${post.id}`).then(function (response) {
+    //         const post_action = response.data.postliked
+    //         setPostLike(post_action)
+    //         setLikeCount(response.data.likeCount)
+    //     })
         
+    // }
+
+    const likePostHandler = async() => {
+        try {
+            const response = await axiosInstance.get(`/posts/like-post/${userId}/${post.id}`)
+            setPostLike(response.data.postliked)
+            setLikeCount(response.data.likeCount)
+
+        }catch(error) {
+            console.log('an error occured during liking the post')
+            toast.error('error occured...')
+        }
     }
 
     useEffect(()=> {
@@ -94,7 +105,7 @@ const Post = ({post, setPosts, setUpdatePosts}) => {
                                     </div>
 
                                     <div className='info'>
-                                        <div className='item' onClick={()=>likePostHandler()}>
+                                        <div className='item' onClick={likePostHandler}>
                                             {postLike ? <FavoriteOutlinedIcon />: <FavoriteBorderOutlinedIcon />}
                                             {/* {likeCount} likes                  */}
                                             <LikeComponent likeCount={likeCount}/>

@@ -13,7 +13,8 @@ import {
   Navigate,
   Outlet,
 } from 'react-router-dom';
-import Profile from './screens/Profile';
+// import Profile from './screens/Profile';
+import Profile from './screens/user/profile/Profile';
 import PostListScreen from './screens/PostListScreen';
 import ChatScreen from './screens/ChatScreen';
 import { Toaster } from 'react-hot-toast';
@@ -52,18 +53,25 @@ function App() {
     return children;
   };
 
+  const LogoutRoute = ({children}) => {
+    if(userInfo) {
+      return <Navigate to='/home' />
+    }
+    return children
+  }
+
   return (
     <>
       <Router>
         <Routes>
-          <Route path='/' element={<Login />} />
+          <Route path='/' element={<LogoutRoute> <Login /> </LogoutRoute>} />
           <Route path='/home' element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index element={<HomeScreen />} />
             <Route path='profile/:id' element={<Profile />} />
           </Route>
-          <Route path='/register' element={<Register />} />
-          <Route path='/otp-login' element={<OtpLogin />} />
-          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/register' element={<LogoutRoute> <Register /> </LogoutRoute>} />
+          <Route path='/otp-login' element={<LogoutRoute><OtpLogin /></LogoutRoute>} />
+          <Route path='/forgot-password' element={<LogoutRoute><ForgotPassword /></LogoutRoute>} />
           <Route path='/ad-home' element={<UserListScreen />} />
           <Route path='/ad-home/posts' element={<PostListScreen />} />
           <Route path='/posts/:id' element={<SinglePostScreen />} />

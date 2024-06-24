@@ -204,7 +204,7 @@ const Share = ({userInfo,onUpdatePosts, userPicture, post, setEditPost, editPost
             {post ? ( 
                       <>
                         <Button size="medium" onClick={handleUpdate}>Update</Button>
-                        <Button size="medium" className="mx-2" onClick={()=>setEditPost(false)}>Cancel</Button>
+                        <Button size="medium" onClick={()=>setEditPost(false)} style={{marginLeft:"5px"}}>Cancel</Button>
                       </>
                     )
                   : <Button size="medium" onClick={handlePost}>Share</Button>

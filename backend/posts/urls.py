@@ -8,7 +8,7 @@ urlpatterns = [
     path('update-posts/', PostsView.as_view()),
     path('admin-posts/', PostsView.as_view()),
     path('usersuggestion/<int:user_id>',UserSuggestions.as_view()),
-    path('follow-user/<int:user_id>/<int:fuser_id>',FollowUser.as_view()),
+    path('follow-user/<int:fuser_id>/',FollowUser.as_view()),
     path('like-post/', PostLikes.as_view()),
     path('like-post/<int:user_id>/<int:post_id>', PostLikes.as_view()),
     path('comment/',CommentView.as_view(),name='comment'),

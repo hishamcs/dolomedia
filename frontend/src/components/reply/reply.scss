@@ -11,6 +11,11 @@
         width: 30px;
         }
     }
+
+    .reply-info-tot {
+        display: flex;
+        justify-content: space-between;
+    }
     .reply-info{
         font-size: smaller;
         width: 100%;

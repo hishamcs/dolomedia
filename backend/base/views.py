@@ -16,6 +16,11 @@ from django.db.models import F
 import firebase_admin
 from firebase_admin import auth as firebase_auth
 from rest_framework_simplejwt.tokens import RefreshToken
+import boto3
+import string
+import random
+from django.core.cache import cache 
+from django.core.mail import send_mail
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -92,19 +97,42 @@ def blo_unblo_user(request, pk):
         user.is_active = True
         user.save()
         return Response({'message':'User is unblocked...','title':'Unblocked'})
-    
+
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def search_user(request):
     search_name = request.GET.get('user').strip()
+    info = request.GET.get('info')
+    print('search name : ', search_name)
+    user_id = request.user.id
     if not search_name:
         return Response({'message':'please enter the username'}, status=status.HTTP_400_BAD_REQUEST)
-    user_id = request.GET.get('userId')
-    if not user_id or not user_id.isdigit():
-        return Response({'message':'Invalid user id'}, status=status.HTTP_400_BAD_REQUEST)
-    users = User.objects.filter(first_name__contains=search_name).exclude(id=user_id)
-    searilizer = UserSerializer(users, many=True)
+    
+    if info == 'Following':
+        following_list = request.user.following.all().select_related('following')
+        users = following_list.filter(following__first_name__icontains=search_name)
+        users = [follow.following for follow in users]
+    else:
+        users = User.objects.filter(first_name__icontains=search_name).exclude(id=user_id)
+    searilizer = UserSerializer(users, many=True, context={'request':request})
     return Response(searilizer.data)
+
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def search_user(request):
+#     search_name = request.GET.get('user').strip()
+#     info = request.GET.get('info')
+#     print('search name : ', search_name)
+#     if not search_name:
+#         return Response({'message':'please enter the username'}, status=status.HTTP_400_BAD_REQUEST)
+#     user_id = request.user.id
+#     users = User.objects.filter(first_name__icontains=search_name).exclude(id=user_id)
+#     searilizer = UserSerializer(users, many=True, context={'request':request})
+#     return Response(searilizer.data)
 
 @api_view(['GET'])
 def generate_otp(request):
@@ -146,12 +174,20 @@ def fetch_user_pic(request):
     except User.DoesNotExist:
         return Response({'error': "User doesn't exist"}, status=status.HTTP_404_NOT_FOUND)
     
+# def delete_s3_media_file(self, file_path):
+#     s3 = boto3.client('s3')
+#     try:
+#         # s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=file_path)
+#         pass
+#     except Exception as e:
+#         raise Exception(f'Failed to delete the media file : {str(e)}')
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_user_pic(request):
     image_data = request.data.get('pro_pic')
-    user_id = request.data.get('id')
+    user_id = request.user.id
     change_pic_type = request.data.get('changePicType')
     if not all([image_data, user_id, change_pic_type]):
         return Response({'error':'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
@@ -175,7 +211,7 @@ def update_user_pic(request):
 @permission_classes([IsAuthenticated])
 def chatroom(request):
     
-    user_id = request.data.get('userId')
+    user_id = request.user.id
     receiver_id = request.data.get('receiverId')
     try:
         user_id = int(user_id)
@@ -219,7 +255,13 @@ def getChatroomMsg(request):
             return Response({'detail':'Room id is required'}, status=status.HTTP_400_BAD_REQUEST)
         room = get_object_or_404(ChatRoom, id=room_id)
         messages = room.messages.all()
-        # messages.update(is_read=True)
+        last_msg = messages.last()
+        
+        if last_msg and last_msg.sender != request.user:
+            last_msg_obj = Message.objects.get(id=last_msg.id)
+            last_msg_obj.is_read = True
+            last_msg_obj.save()
+
         serializer = MessageSerializer(messages, many=True)
         return Response(serializer.data)
     except ValueError:
@@ -253,6 +295,91 @@ def google_auth(request):
         return Response(user_info, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+def generate_otp(length=6):
+    characters = string.digits
+    otp = ''.join(random.choice(characters) for _ in range(length))
+    return otp
+
+def send_mail_user(to_email, otp):
+    subject = 'Your OTP From dolomedia.xyz'
+    message = f'Hello,\n\nYour One-Time_Password is : {otp}\nPlease donot share this OTP. \n Thankyou!'
+    send_mail(
+        subject,
+        message,
+        'no-reply@example.com',
+        [to_email],
+        fail_silently=False
+    )
+
+
+@api_view(['POST'])
+def otp_login_generate(request):
+    email = request.data.get('email')
+    try:
+        user = User.objects.get(email=email)
+        otp = generate_otp()
+        send_mail_user(email, otp)
+        cache.set(f'otp_{email}', otp, timeout=300)
+        return Response({'message':"otp sended"}, status=status.HTTP_200_OK)    
+    except User.DoesNotExist:
+        return Response({"error":"User doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
     
+
+@api_view(['POST'])
+def otp_login_verify(request):
+    email = request.data.get('email')
+    otp = request.data.get('otp')
+    if not email or not otp:
+        return Response({'error':'Emai and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
+    cached_otp = cache.get(f'otp_{email}')
+    if cached_otp and cached_otp == otp:
+        user = get_object_or_404(User, email=email)
+        user_info = UserSerializer(user).data
+        refresh = RefreshToken.for_user(user)
+        user_info['refresh'] = str(refresh)
+        user_info['access'] = str(refresh.access_token)
+        return Response(user_info, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail':'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def otp_verify(request):
+    email = request.data.get('email')
+    otp = request.data.get('otpNum')
+    if not email or not otp:
+        return Response({'detail':'Emai and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
+    cached_otp = cache.get(f'otp_{email}')
+    if cached_otp and cached_otp == otp:
+        return Response({'message':'OTP verified successfully'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'detail':'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def change_password(request):
+    email = request.data.get('email')
+    password = request.data.get('password')
+    if not email or not password:
+        return Response({'detail':'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+    user = get_object_or_404(User, email=email)
+    user.set_password(password)
+    user.save()
+    return Response({'message':'Password updated successfully'}, status=status.HTTP_200_OK)
+
+
+
+# @api_view(['POST'])
+# def otp_login(request):
+#     phone = request.data.get('phone')
+#     if not phone:
+#         return Response({'detail':'Phone number is required...'}, status=status.HTTP_400_BAD_REQUEST)
     
-    
+#     try:
+#         user = User.objects.get(phone=phone)
+#         user_info = UserSerializer(user).data
+#         refresh = RefreshToken.for_user(user)
+#         user_info['refresh'] = str(refresh)
+#         user_info['access'] = str(refresh.access_token)
+#         return Response(user_info, status=status.HTTP_200_OK)
+#     except User.DoesNotExist:
+#         return Response({'detail':'There is no Account with this number'}, status=status.HTTP_400_BAD_REQUEST)

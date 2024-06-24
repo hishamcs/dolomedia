@@ -63,6 +63,7 @@
                         span{
                             font-weight: 500;
                             color: #000;
+                            text-decoration: none;
                         }
                     }
 
@@ -74,9 +75,10 @@
                         button{
                             border:none;
                             color:white;
-                            padding:5px;
+                            padding:8px;
                             cursor:pointer;
                             font-size: 12px;
+                            border-radius: 5px;
 
                             &:first-child{
                                 background-color: #5271ff;

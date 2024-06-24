@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import axios from 'axios'
 import './reply.scss'
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import MoreInfo from '../moreInfo/MoreInfo';
 import toast from 'react-hot-toast';
+import axiosInstance from '../../axios';
 
 
 
@@ -22,16 +22,10 @@ const Reply = ({reply,refreshReply, setRefreshReply, setReplies, setRepliesCount
     const [replyForm, setReplyForm] = useState(false)
 
     const handleSubmit = (e) => {
-        const data = {content:mesg, userId:userId, commentId:reply.parent, replyId:reply.id}
-        const config = {
-            headers:{
-              'Content-type':'application/json',
-              Authorization: `Bearer ${userInfo?.token}`
-            }
-        }
+        const data = {content:mesg, commentId:reply.parent, replyId:reply.id}
         e.preventDefault()
-        axios.post('/posts/comment/',data, config).then((response) => {
-            console.log(response.data)
+        axiosInstance.post('/posts/comment/',data).then((response) => {
+            // console.log(response.data)
             setRepliesCount(response.data.length)
             setRefreshReply(!refreshReply)
             setMesg('')
@@ -41,28 +35,21 @@ const Reply = ({reply,refreshReply, setRefreshReply, setReplies, setRepliesCount
     }
 
     const handleReplyLike = async() => {
-        const config = {
-            headers:{
-                'Content-type':'application/json'
-            }
+        try {
+            const response = await axiosInstance.post('/posts/like-comment/', {'commentId':reply.id})
+            setReplyLikeCt(response.data.likeCount)
+            setReplyLike(response.data.commentLike)
+        } catch(error) {
+            console.log('error occured during liking the reply : ', error)
         }
-
-        const response = await axios.post('/posts/like-comment/', {'commentId':reply.id, 'userId':userId},config)
-        setReplyLikeCt(response.data.likeCount)
-        setReplyLike(response.data.commentLike)
+        
     }
 
     const handleEditReply = async(e) => {
         e.preventDefault()
-        const token = userInfo?.token
-        const data = {'content':editReplyContent, 'userId':userId, 'commentId':reply.id}
-        const config = {
-            headers:{
-                Authorization: `Bearer ${token}`
-            }
-        }
+        const data = {'content':editReplyContent,'commentId':reply.id}
         try {
-            const response = await axios.patch('/posts/comment/', data, config)
+            const response = await axiosInstance.patch('/posts/comment/', data)
             
             if (response.status===200) {
                 setEditReply(false)
@@ -116,7 +103,7 @@ const Reply = ({reply,refreshReply, setRefreshReply, setReplies, setRepliesCount
                                 {replyForm && (<div className='reply-form'>
                                                     <form onSubmit={handleSubmit}>
                                                         <input placeholder='Enter your reply...' value={mesg} onChange={(e)=>setMesg(e.target.value)} required/>
-                                                        <button type='submit'>Reply</button>
+                                                        <button type='submit' style={{cursor:"pointer"}}>Reply</button>
                                                     </form>
                                                 </div>
                                                 )
@@ -127,7 +114,7 @@ const Reply = ({reply,refreshReply, setRefreshReply, setReplies, setRepliesCount
                                 <div className='edit-reply'>
                                     <form onSubmit={handleEditReply}>
                                         <input placeholder='Enter your reply...' value={editReplyContent} required onChange={(e)=>setEditReplyContent(e.target.value)}/>
-                                        <button type='submit'>Update</button>
+                                        <button type='submit' style={{cursor:"pointer"}}>Update</button>
                                         <button onClick={()=>setEditReply(false)}>Cancel</button>
                                     </form>
                                 </div>

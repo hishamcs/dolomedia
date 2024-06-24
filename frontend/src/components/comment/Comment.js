@@ -10,6 +10,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import MoreInfo from '../moreInfo/MoreInfo';
 import toast from 'react-hot-toast';
+import axiosInstance from '../../axios';
 
 const Comment = ({comment, setComments, setCommentCount}) => {
     const [replies, setReplies] = useState([])
@@ -22,26 +23,22 @@ const Comment = ({comment, setComments, setCommentCount}) => {
     const [editComment, setEditComment] = useState(false)
     const [editCmtContent, setEditCmtContent] = useState(comment.content)
     const userLogin = useSelector(state=>state.userLogin)
-    const userPic = useSelector(state=>state.userPicture)
-    const {userPicture} = userPic
-    const proPicSrc = userPicture?.pro_pic
+    // const userPic = useSelector(state=>state.userPicture)
+    // const {userPicture} = userPic
+    // const proPicSrc = userPicture?.pro_pic
+    
     const {userInfo} = userLogin
     const userId = userInfo?.id
+    const proPicSrc = userInfo?.pro_pic
     const commentId = comment?.id
 
 
     const handleCmtUpdate = async(e) => {
         e.preventDefault()
-        const token = userInfo?.token
-        const data = {'commentId':comment.id,'userId':userId, 'content':editCmtContent}
+        const data = {'commentId':comment.id,'content':editCmtContent}
         const url = '/posts/comment/'
-        const config = {
-            headers:{
-                Authorization: `Bearer ${token}`
-            }
-        }
         try {
-            const response = await axios.patch(url, data, config)
+            const response = await axiosInstance.patch(url, data)
             
             if(response.status===200) {
                 setEditComment(false)
@@ -56,30 +53,25 @@ const Comment = ({comment, setComments, setCommentCount}) => {
         }
     } 
     const handlelike = async() => {
-        const config = {
-            headers:{
-                'Content-type':'application/json'
-            }
+        try {
+            const response = await axiosInstance.post('/posts/like-comment/', {'commentId':commentId})
+            setCommentLikeCt(response.data.likeCount)
+            setCommentLike(response.data.commentLike)
+        } catch(error) {
+            console.log("Error occured during liking the comment : ", error)
         }
-
-        const response = await axios.post('/posts/like-comment/', {'commentId':commentId, 'userId':userId}, config)
-        setCommentLikeCt(response.data.likeCount)
-        setCommentLike(response.data.commentLike)
+        
     }
-
+    
     const handleSubmit = (e) => {
         e.preventDefault()
-        axios({
+        axiosInstance({
             method:'post',
             url:'/posts/comment/',
             data:{
                 commentId:commentId,
-                userId:userId,
                 content:content
             },
-            headers:{
-                Authorization:`Bearer ${userInfo?.token}`
-            }
         }).then((response) => {
             console.log('res : ', response.data.length)
             setReplies(response.data)
@@ -90,6 +82,31 @@ const Comment = ({comment, setComments, setCommentCount}) => {
         })
 
     }
+
+
+    // const handleSubmit = (e) => {
+    //     e.preventDefault()
+    //     axios({
+    //         method:'post',
+    //         url:'/posts/comment/',
+    //         data:{
+    //             commentId:commentId,
+    //             userId:userId,
+    //             content:content
+    //         },
+    //         headers:{
+    //             Authorization:`Bearer ${userInfo?.token}`
+    //         }
+    //     }).then((response) => {
+    //         console.log('res : ', response.data.length)
+    //         setReplies(response.data)
+    //         setRepliesCount(response.data.length)
+    //         setReplyFormOpen(false)
+    //         setReplyOpen(true)
+    //         setContent('')
+    //     })
+
+    // }
 
     // useEffect(()=> {
 
@@ -126,7 +143,7 @@ const Comment = ({comment, setComments, setCommentCount}) => {
                                             <div className='reply-send'>
                                                 <img src={proPicSrc} alt="" />
                                                 <input type='text' placeholder='write your reply' required value={content} onChange={(e)=>setContent(e.target.value)}/>
-                                                <button type='submit' className=''>Reply</button>
+                                                <button type='submit' style={{cursor:"pointer"}}>Reply</button>
                                                 <span onClick={()=>setReplyFormOpen(!replyFormOpen)}>Cancel</span>
                                             </div>
                                         </form>
@@ -145,7 +162,7 @@ const Comment = ({comment, setComments, setCommentCount}) => {
                                             <div className='reply-send'>
                                 
                                                 <input type='text' placeholder='write your comment' required value={editCmtContent} onChange={(e)=>setEditCmtContent(e.target.value)}/>
-                                                <button type='submit' className=''>Update</button>
+                                                <button type='submit'style={{cursor:"pointer"}}>Update</button>
                                                 <span onClick={()=> setEditComment(false)}>Cancel</span>
                                             </div>              
                                         </form>

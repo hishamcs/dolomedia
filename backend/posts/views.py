@@ -14,6 +14,8 @@ from rest_framework import status
 from rest_framework.settings import api_settings
 import os
 from rest_framework.pagination import PageNumberPagination
+import boto3
+from django.db import transaction
 
 
 # Create your views here.
@@ -56,7 +58,7 @@ class PostsView(APIView):
 
 
     def get(self, request):
-        user_id = request.GET.get('userId')
+        user_id = request.user.id
         if user_id is None:
             return Response({'error':'User id is required'}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -74,6 +76,12 @@ class PostsView(APIView):
             print('exception  :', e)
             return Response({'error':str(e)}, status=status.HTTP_404_NOT_FOUND)
         
+    def delete_s3_media_file(self, file_path):
+        s3 = boto3.client('s3')
+        try:
+            s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=file_path)
+        except Exception as e:
+            raise Exception(f'Failed to delete the media file : {str(e)}')
         
 
     def delete(self, request):
@@ -81,18 +89,16 @@ class PostsView(APIView):
         try:
             post = Posts.objects.get(id=post_id)
             if post.image:
-                image_file_path = os.path.join(settings.MEDIA_ROOT, str(post.image))
-                if os.path.exists(image_file_path):
-                    os.remove(image_file_path)
-                else:
-                    return Response({'error':'Image file doesnot exist'}, status=status.HTTP_404_NOT_FOUND)
+                try:
+                    self.delete_s3_media_file(str(post.image))
+                except Exception as e:
+                    return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
             if post.video:
-                video_file_path = os.path.join(settings.MEDIA_ROOT, str(post.video))
-                if os.path.exists(video_file_path):
-                    os.remove(video_file_path)
-                else:
-                    return Response({'error':'Video file doesnot exist'},status=status.HTTP_404_NOT_FOUND)
+                try:
+                    self.delete_s3_media_file(str(post.video))
+                except Exception as e:
+                    return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             post.delete()
             posts = Posts.objects.all()
             serializer = self.serializer_class(posts, many=True)
@@ -101,6 +107,33 @@ class PostsView(APIView):
             return Response({'error':'Post not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    
+    # def delete(self, request):
+    #     post_id = request.GET.get('postId')
+    #     try:
+    #         post = Posts.objects.get(id=post_id)
+    #         if post.image:
+    #             image_file_path = os.path.join(settings.MEDIA_ROOT, str(post.image))
+    #             if os.path.exists(image_file_path):
+    #                 os.remove(image_file_path)
+    #             else:
+    #                 return Response({'error':'Image file doesnot exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+    #         if post.video:
+    #             video_file_path = os.path.join(settings.MEDIA_ROOT, str(post.video))
+    #             if os.path.exists(video_file_path):
+    #                 os.remove(video_file_path)
+    #             else:
+    #                 return Response({'error':'Video file doesnot exist'},status=status.HTTP_404_NOT_FOUND)
+    #         post.delete()
+    #         posts = Posts.objects.all()
+    #         serializer = self.serializer_class(posts, many=True)
+    #         return Response(serializer.data,status=status.HTTP_200_OK)
+    #     except Posts.DoesNotExist:
+    #         return Response({'error':'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+    #     except Exception as e:
+    #         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
     
     def patch(self, request):
@@ -164,20 +197,71 @@ class UserSuggestions(APIView):
         suggestions = users.exclude(followers__in=users_followings)
         serializer = UserSerializer(suggestions, many=True)
         return Response(serializer.data)
-    
+
+
 class FollowUser(APIView):
-    def post(self, request, user_id, fuser_id):
+    def post(self, request, fuser_id):
+        print('request .data : ', request.data)
+        info = request.data.get('info')
+        search_content = request.data.get('search_content')
+
+
+        user_id = request.user.id
         user = User.objects.get(id=user_id)
         follows = User.objects.get(id=fuser_id)
-        FollowList.objects.create(follower=user, following=follows)
-        status = f'{user.username} started to following you'
-        Notification.objects.create(sender=user, recipient=follows, action="Follow", noti_content=status)
-        OpenedNotification.objects.filter(user=follows).update(noti_count=F('noti_count')+1)
-        user_following = user.following.all()
-        users = User.objects.filter(is_superuser=False).exclude(id=user_id)
-        suggested_users = users.exclude(followers__in=user_following)
-        serializer = UserSerializer(suggested_users, many=True)
-        return Response(serializer.data)
+
+
+        with transaction.atomic():
+            follow_relation, created = FollowList.objects.get_or_create(follower=user, following=follows)
+
+            if not created:
+                follow_relation.delete()
+            else:
+                status = f'{user.username} started to following you'
+                Notification.objects.create(sender=user, recipient=follows, action="Follow", noti_content=status)
+                OpenedNotification.objects.filter(user=follows).update(noti_count=F('noti_count')+1)  
+
+        if search_content and info == 'SearchResult':
+            users = User.objects.filter(first_name__icontains=search_content).exclude(id=user_id)
+            searilizer = UserSerializer(users, many=True, context={'request':request})
+            return Response(searilizer.data)
+        elif info == 'Following List':
+            following_list = user.following.all()
+            serializer = FollowListSerializer(following_list, many=True, context={'request':request})
+            return Response(serializer.data)
+        elif info == 'Followers List':
+            followers_list = user.followers.all()
+            serializer = FollowListSerializer(followers_list, many=True, context={'request':request})
+            return Response(serializer.data)
+        elif info == 'suggestion':
+            user_following = user.following.all()
+            users = User.objects.filter(is_superuser=False).exclude(id=user_id)
+            suggested_users = users.exclude(followers__in=user_following)
+            serializer = UserSerializer(suggested_users, many=True)
+            return Response(serializer.data)
+        else:
+            serializer = UserSerializer(follows, context={'request':request})
+            return Response(serializer.data)
+
+
+
+
+#info ==search, followerlist, following list
+# class FollowUser(APIView):
+#     def post(self, request, fuser_id):
+#         print('request .data : ', request.data)
+#         user_id = request.user.id
+#         user = User.objects.get(id=user_id)
+#         follows = User.objects.get(id=fuser_id)
+#         FollowList.objects.create(follower=user, following=follows)
+#         status = f'{user.username} started to following you'
+#         Notification.objects.create(sender=user, recipient=follows, action="Follow", noti_content=status)
+#         OpenedNotification.objects.filter(user=follows).update(noti_count=F('noti_count')+1)
+#         user_following = user.following.all()
+#         users = User.objects.filter(is_superuser=False).exclude(id=user_id)
+#         suggested_users = users.exclude(followers__in=user_following)
+#         serializer = UserSerializer(suggested_users, many=True)
+#         return Response(serializer.data)
     
 
 class PostLikes(APIView):
@@ -228,8 +312,9 @@ class CommentView(APIView):
         
         if comment_id:
             parent = get_object_or_404(Comment, id=comment_id)
-            user_id = request.data.get('userId')
-            user = get_object_or_404(User, id=user_id)
+            # user_id = request.data.get('userId')
+            # user = get_object_or_404(User, id=user_id)
+            user = request.user
             reply_id = request.data.get('replyId', None)
             reply = Comment.objects.filter(id=reply_id)
             post = parent.post
@@ -256,7 +341,8 @@ class CommentView(APIView):
             
         else:
             content = request.data.get('content')
-            user_id = request.data.get('userId')
+            # user_id = request.data.get('userId')
+            user_id = request.user.id
             post_id = request.data.get('postId')
             user = get_object_or_404(User, id=user_id) 
             post_instance = get_object_or_404(Posts, id=post_id)
@@ -280,7 +366,8 @@ class CommentView(APIView):
     def get(self,request):
         comment_id = request.GET.get('commentId')
         post_id = request.GET.get('postId')
-        user_id = request.GET.get('userId')
+        # user_id = request.GET.get('userId')
+        user_id = request.user.id
         if comment_id:
             comment = Comment.objects.get(id=comment_id)
             replies = comment.replies.all()
@@ -294,7 +381,7 @@ class CommentView(APIView):
     
     def delete(self, request):
         comment_id = request.GET.get('commentId')
-        user_id = request.GET.get('userId')
+        user_id = request.user.id
         if not comment_id:
             return Response({'error':'comment id is required...'}, status=status.HTTP_400_BAD_REQUEST)
         if not user_id:
@@ -345,8 +432,8 @@ class ProfileView(APIView):
         following = user.following.all().count()
         followers = user.followers.all().count()
         posts = Posts.objects.filter(user__id=user_id)
-        post_serializer = PostSerializer(posts,many=True)
-        user_serializer = UserSerializer(user)
+        post_serializer = PostSerializer(posts,many=True,context={'request':request})
+        user_serializer = UserSerializer(user,context={'request':request})
         serializer_data = {
             'user':user_serializer.data,
             'posts':post_serializer.data,
@@ -356,19 +443,20 @@ class ProfileView(APIView):
         return Response(serializer_data) 
 
 class FollowingList(APIView):
+    
     serializer_class = FollowListSerializer
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         info = request.data.get('info')
-        user_id = request.data.get('userId')
-        user = User.objects.get(id=user_id)
+        user = request.user
         
         if info:
             followers_list = user.followers.all()
-            serializer = self.serializer_class(followers_list, many=True)
+            serializer = self.serializer_class(followers_list, many=True, context={'request':request})
             return Response(serializer.data)
         
         following_list = user.following.all()
-        serializer = self.serializer_class(following_list, many=True)
+        serializer = self.serializer_class(following_list, many=True, context={'request':request})
         
         return Response(serializer.data)      
 
@@ -397,7 +485,7 @@ class CommentLikeView(APIView):
     def get(self, request):
         return Response({'message':'success'})
     def post(self, request):
-        user_id = request.data.get('userId')
+        user_id = request.user.id
         comment_id = request.data.get('commentId')
         comment = Comment.objects.get(id=comment_id)
         comment_like = CommentLike.objects.filter(user__id=user_id, comment__id=comment_id)

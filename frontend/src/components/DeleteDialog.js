@@ -8,6 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux';
+import axiosInstance from '../axios';
 
 export default function DeleteDialog({title, deleteDialog, setDeleteDialog, id, setUpdateData, setUpdateDataCount}) {
   const userLogin = useSelector(state=>state.userLogin)
@@ -19,27 +20,21 @@ export default function DeleteDialog({title, deleteDialog, setDeleteDialog, id, 
   };
 
 
-
   const handleDeleteSubmit = async() => {
-    const token = userInfo?.token
     let params, url;
-
     if (title==='Post') {
       params = {'postId':id}
       url = '/posts/post-delete/'
     } else if (title=== 'Comment' || title === 'Reply') {
-      params = {'commentId':id, 'userId':userId}
+      params = {'commentId':id}
       url = '/posts/comment/'
     } else return;
 
     try {
       const config = {
         params:params,
-        headers:{
-          Authorization: `Bearer ${token}`
-        }
       }
-      const response = await axios.delete(url, config)
+      const response = await axiosInstance.delete(url, config)
       if(title=== 'Comment' || title === 'Reply') {
         setUpdateDataCount(response.data.length)
       }
@@ -58,11 +53,60 @@ export default function DeleteDialog({title, deleteDialog, setDeleteDialog, id, 
         },
       });
     } catch(error) {
-      console.log('error : ', error)
-      toast.error(error.response.data.detail)
+      console.log('error in delete dialog : ', error)
+      toast.error(
+        error.response && error.response.data.error
+          ? error.response.data.error
+          : error.message
+      )
       handleClose()
     }  
-  } 
+  }
+
+
+  // const handleDeleteSubmit = async() => {
+  //   const token = userInfo?.token
+  //   let params, url;
+
+  //   if (title==='Post') {
+  //     params = {'postId':id}
+  //     url = '/posts/post-delete/'
+  //   } else if (title=== 'Comment' || title === 'Reply') {
+  //     params = {'commentId':id, 'userId':userId}
+  //     url = '/posts/comment/'
+  //   } else return;
+
+  //   try {
+  //     const config = {
+  //       params:params,
+  //       headers:{
+  //         Authorization: `Bearer ${token}`
+  //       }
+  //     }
+  //     const response = await axios.delete(url, config)
+  //     if(title=== 'Comment' || title === 'Reply') {
+  //       setUpdateDataCount(response.data.length)
+  //     }
+  //     handleClose()
+  //     setUpdateData(response.data)
+
+  //     toast.success('Deleted...', {
+  //       style: {
+  //         border: '1px solid #713200',
+  //         padding: '16px',
+  //         color: '#713200',
+  //       },
+  //       iconTheme: {
+  //         primary: '#713200',
+  //         secondary: '#FFFAEE',
+  //       },
+  //     });
+  //   } catch(error) {
+  //     console.log('error : ', error)
+  //     toast.error(error.response.data.detail)
+  //     handleClose()
+  //   }  
+  // } 
 
   return (
     <Fragment>

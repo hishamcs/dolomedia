@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import './rightBar.scss'
-import axios from 'axios'
 import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import axiosInstance from '../../axios'
+import toast from "react-hot-toast";
 
 function RightBar() {
 
@@ -13,15 +13,18 @@ function RightBar() {
   const userId = userInfo?.id
   const [userList, setUserList] = useState(null)
 
-  const followUserHandler = async(fuser_id) => {
-
-    const config = {
-      headers: {
-          'Content-type': 'application/json'
+  const followUserHandler = async(fuser) => {
+    try {
+      const response = await axiosInstance.post(`/posts/follow-user/${fuser.id}/`, {'info':'suggestion'})
+      setUserList(response.data)
+      console.log('response : ', response)
+      if(response.status === 200) {
+        toast.success(`You are started to follow ${fuser.name}`)
       }
-  }
-    const response = await axios.post(`/posts/follow-user/${userId}/${fuser_id}`,config)
-    setUserList(response.data)
+    } catch(error) {
+      console.log('error : ',error)
+    }
+    
   }
 
   useEffect(() =>{
@@ -29,13 +32,13 @@ function RightBar() {
       navigate('/')
     } else {
     const fetchData = async() => {
-      // const config = {
-      //   headers:{
-      //       'Content-type':'application/json',
-      //   }
-      // }
-      const response = await axiosInstance.get(`/posts/usersuggestion/${userId}`)
-      setUserList(response.data)
+      try {
+        const response = await axiosInstance.get(`/posts/usersuggestion/${userId}`)
+        setUserList(response.data)
+      } catch(error) {
+        console.log('erorr : ',error)
+      }
+      
     }
 
     fetchData()
@@ -50,14 +53,14 @@ function RightBar() {
           <span>Suggestions For You</span>
           {userList?.map((user)=> (
           <div className='user' key={user.id}>
-            <Link to={`/home/profile/${user.id}`}>
+            <Link to={`/home/profile/${user.id}`} style={{textDecoration:"none"}}>
             <div className='userinfo'>
-              <img src='https://images.pexels.com/photos/3228727/pexels-photo-3228727.jpeg?auto=compress&cs=tinysrgb&w=1600' alt='user'/>
+              <img src={user.pro_pic} alt=''/>
               <span>{user.name}</span>
             </div>
             </Link>
             <div className='buttons'>
-              <button onClick={()=>followUserHandler(user.id)}>Follow</button>
+              <button onClick={()=>followUserHandler(user)}>Follow</button>
               {/* <button>Dismiss</button> */}
             </div>
           </div>

@@ -61,6 +61,9 @@ axiosInstance.interceptors.response.use(
     },
     async function (error) {
         console.log('error  :', error)
+        console.log('error config : ', error.config)
+        console.log('error.response : ', error.response)
+        
         // const originalRequest = error.config
 
         // if(typeof error.response === 'undefined') {

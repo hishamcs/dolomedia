@@ -1,16 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+import uuid
+from django.utils import timezone
 # Create your models here.
 
+
+def post_directory_path(instance, filename):
+    extention = filename.split('.')[-1]
+    filename = f'{uuid.uuid4().hex}.{extention}'
+    return f'posts/{instance.user.id}/{filename}'
 
 class Posts(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
-    video = models.FileField(upload_to='posts/video/', null=True, blank=True)
+    image = models.ImageField(upload_to=post_directory_path, null=True, blank=True)
+    video = models.FileField(upload_to=post_directory_path, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    update_at = models.DateTimeField(auto_now=True)
+    update_at = models.DateTimeField()
     likeCount = models.IntegerField(default=0)
     report_count = models.IntegerField(default=0)
 
@@ -19,6 +26,15 @@ class Posts(models.Model):
     
     class Meta:
         ordering = ['-update_at']
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.update_at = timezone.now()
+        else:
+            old_instance = Posts.objects.get(id=self.id)
+            if old_instance.content != self.content or old_instance.image != self.image or old_instance.video != self.video:
+                self.update_at = timezone.now()
+        super().save(*args, **kwargs)
     
     
     
@@ -47,7 +63,7 @@ class Comment(models.Model):
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='replies')
 
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['timestamp']
 
 class CommentLike(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='liked_comment')

@@ -23,6 +23,11 @@ urlpatterns = [
     path('chatroom/', views.chatroom, name='chatroom'),
     path('chatlist/',views.chatlist, name='chatlist'),
     path('chatroom/messages/', views.getChatroomMsg, name='getroom_msgs'),
+    path('user/otp-login-generate/', views.otp_login_generate, name='otp-login_generate'),
+    path('user/otp-login-verify/', views.otp_login_verify, name='otp_login_verify'),
+    path('user/otp-verify/', views.otp_verify, name='otp-verify'),
+    path('user/change-password/', views.change_password, name='change_password'),
+    # path('user/otp-login/', views.otp_login, name='otp-login'),
 ]
 
 

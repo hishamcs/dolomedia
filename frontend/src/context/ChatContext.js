@@ -1,7 +1,7 @@
 
 import { createContext, useEffect, useState, useRef} from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 
 
@@ -28,7 +28,7 @@ export const ChatProvider = ({children}) => {
             }
         }
         try {
-            const response = await axios.post('/api/chatlist/',{'userId':id}, config)
+            const response = await axiosInstance.post('chatlist/',{'userId':id}, config)
             // console.log('chat list : ', response.data)
             setChats(response.data)
 
@@ -71,6 +71,11 @@ export const ChatProvider = ({children}) => {
             socket.close()
         }
     }, [id])
+    //add newly shown down 
+    useEffect(()=> {
+        fetchChatlist()
+    }, [chatroomId])
+
 
     const callUser = (remoteUserId, stream) => {
         const peer = new RTCPeerConnection()

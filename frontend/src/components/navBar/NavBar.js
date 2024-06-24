@@ -36,8 +36,7 @@ function NavBar() {
   const handleSearch = () => {
     if(searchContent!==''){
       setDetail(true)
-
-      axiosInstance.get('user-search/', {params:{user:searchContent, userId:userId}}).then(response=> {
+      axiosInstance.get('user-search/', {params:{user:searchContent}}).then(response=> {
         console.log(response.data)
         setUserLists(response.data)
       })
@@ -133,7 +132,7 @@ function NavBar() {
                 <LogoutOutlinedIcon onClick={logoutHandler}/>
             </div>
         </div>
-        {detail && <ShowDeatils detail={detail} setDetail={setDetail} lists={userLists} listInfo='SearchResult'/>}
+        {detail && <ShowDeatils detail={detail} setDetail={setDetail} lists={userLists} listInfo='SearchResult' searchContent={searchContent}/>}
         {notifications && <Notification notifications={notifications} setNotifications={setNotifications} notificationList={notificaitonList}/>}
     </div>
   )

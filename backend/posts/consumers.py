@@ -10,6 +10,7 @@ import json
 class NotificationConsumer(WebsocketConsumer):
 
     def connect(self):
+        print('working')
         self.room_name = self.scope['url_route']['kwargs']['user_id']
         self.room_group_name = f'notification_{self.room_name}'
         

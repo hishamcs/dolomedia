@@ -1,10 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import uuid
 # Create your models here.
 
 
 def user_directory_path(instance, filename):
-    return f'user_{instance.id}/{filename}'
+    extention = filename.split('.')[-1]
+    filename = f'{uuid.uuid4().hex}.{extention}'
+    return f'users/user_{instance.id}/{filename}'
 class User(AbstractUser):
     phone = models.CharField(max_length=10, unique=True, null=True)
     pro_pic = models.ImageField(

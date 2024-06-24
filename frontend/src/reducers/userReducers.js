@@ -23,6 +23,7 @@ import {
     USER_FETCHPIC_SUCCESS,
     USER_FETCHPIC_REQUEST,
 
+    USER_UPDATE_PROFILE_PIC
 
 } from '../constants/userConstants'
 
@@ -33,6 +34,15 @@ export const userLoginReducer = (state = {}, action) => {
 
         case USER_LOGIN_SUCCESS:
             return { loading: false, userInfo: action.payload }
+
+        case USER_UPDATE_PROFILE_PIC:
+            return {
+                ...state,
+                userInfo: {
+                    ...state.userInfo,
+                    pro_pic:action.payload
+                }
+            }
 
         case USER_LOGIN_FAIL:
             return { loading: false, error: action.payload }

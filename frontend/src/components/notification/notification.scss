@@ -1,0 +1,49 @@
+.notification-mo {
+    background-color: #fff;
+    border: none;
+    border-radius: 10px;
+    
+
+    .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: white;
+
+        button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            background-color: aliceblue;
+            cursor: pointer;
+        }
+    }
+
+    p{
+        // background-color: red;
+        padding: 15px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: rgb(237, 237, 237);
+            border-radius: 10px;
+        }
+    }
+
+    &::-webkit-scrollbar {
+        width: 5px;
+        background-color: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color:rgba(64, 67, 73, 0.5);  
+    }
+}
+

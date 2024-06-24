@@ -1,7 +1,10 @@
 .chatList {
     flex: 1;
     overflow-y: scroll;
-
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
     .item {
         display: flex;
         align-items: center;

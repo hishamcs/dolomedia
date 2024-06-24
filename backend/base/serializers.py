@@ -1,4 +1,5 @@
 from .models import User, ChatRoom, Message, UserOnlineStatus
+from posts.models import FollowList
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -14,6 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(read_only=True)
     isAdmin = serializers.SerializerMethodField(read_only=True)
     is_online = serializers.SerializerMethodField(read_only=True)
+    is_following = serializers.SerializerMethodField(read_only=True)
     email = serializers.EmailField(required=True)
     password = serializers.CharField(
         write_only=True,
@@ -50,7 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id','email', 'name','is_active','isAdmin','pro_pic', 'cover_pic', 'is_online', 'password', 'first_name', 'phone']
+        fields = ['id','email', 'name','is_active','isAdmin','pro_pic', 'cover_pic', 'is_online', 'password', 'first_name', 'phone', 'is_following']
 
     
     def get_name(self, obj):
@@ -65,6 +67,13 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_online(self, obj):
         status = get_object_or_404(UserOnlineStatus, user=obj)
         return status.is_online
+    
+    def get_is_following(self, obj):
+        request = self.context.get('request', None)
+        if request is None or request.user.is_anonymous:
+            return False
+        current_user = request.user
+        return FollowList.objects.filter(following=obj, follower=current_user).exists()
     
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -103,9 +112,10 @@ class ChatroomSerializer(serializers.ModelSerializer):
     user2 = UserSerializer(read_only=True)
     last_message = serializers.SerializerMethodField(read_only=True)
     last_msg_read = serializers.SerializerMethodField(read_only=True)
+    sender_id = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = ChatRoom
-        fields = ['id', 'user1', 'user2', 'last_message', 'last_msg_read']
+        fields = ['id', 'user1', 'user2', 'last_message', 'last_msg_read', 'sender_id']
 
     def get_last_message(self, obj):
         last_message = obj.messages.order_by('-id').first()
@@ -118,6 +128,11 @@ class ChatroomSerializer(serializers.ModelSerializer):
         if last_message and last_message.is_read:
             return True
         return False
+    def get_sender_id(self, obj):
+        last_msg = obj.messages.last()
+        if last_msg:
+            return last_msg.sender.id
+        return None
         
     
 

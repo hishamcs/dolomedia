@@ -4,6 +4,7 @@ import axios from 'axios'
 import { useContext, useState } from 'react'
 import toast from "react-hot-toast";
 import ChatContext from '../../../../../context/ChatContext';
+import axiosInstance from '../../../../../axios'
 
 
 const AddUser = () => {
@@ -11,6 +12,8 @@ const AddUser = () => {
     const {fetchChatlist} = useContext(ChatContext)
     const [users, setUsers] = useState([])
     const [userCount, setUserCount] = useState()
+
+
     const handleSubmit = async(e) => {
         e.preventDefault()
         const formData = new FormData(e.target)
@@ -21,14 +24,10 @@ const AddUser = () => {
         }
         
         const config = {
-            params:{'user':userName,'userId':id},
-            headers: {
-                'Content-type': 'application/json',
-                Authorization: `Bearer ${token}`
-            }
+            params:{'user':userName,'info':'Following'},
         }
         try {
-            const response = await axios.get('/api/user-search/', config)
+            const response = await axiosInstance.get('user-search/', config)
             setUserCount(response.data.length)
             setUsers(response.data)
             console.log('resp : ', response)
@@ -42,15 +41,10 @@ const AddUser = () => {
     }
 
     const handleAdd = async(receiverId) => {
-        const data = {'userId':id, 'receiverId':receiverId}
-        const config = {
-            headers: {
-                'Content-type':'application/json',
-                Authorization: `Bearer ${token}`
-            }
-        }
+        const data = {'receiverId':receiverId}
+        
         try{
-            const response = await axios.post('/api/chatroom/', data, config)
+            const response = await axiosInstance.post('chatroom/', data)
             console.log(response)
             if(response.status === 200) {
                 fetchChatlist()

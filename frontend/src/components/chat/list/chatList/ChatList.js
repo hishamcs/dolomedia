@@ -30,11 +30,18 @@ const ChatList = () => {
     ))
     return (
         <div className="chatList">
-            {filteredChats.map(chat=> (
+            {filteredChats.map(chat=> {
+            
+            const style = (chat.sender_id != id && chat.last_message && !chat.last_msg_read)
+                                ? { backgroundColor: "#909ef8", borderRadius: "5px" }
+                                : {}
+
+            return (
                 <div 
                     className='item' 
                     key={chat.id}
                     onClick={()=>handleSelect(chat)}
+                    style={style}
                 >
                     <img 
                         src={chat.user1.id === id 
@@ -60,7 +67,8 @@ const ChatList = () => {
                     }
                     
                 </div>
-            ))}
+            )}
+            )}
         </div>
     )
 }
